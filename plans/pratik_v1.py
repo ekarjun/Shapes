@@ -6,8 +6,6 @@ class Activate(Plan):
     """activate a geometric-shape resource type"""
 
     def run(self):
-        self.log("activate plan for pratik demo")
-
         # GET the resource its properties from the market as only the resource_id is passed in
         resource_id = self.params['resourceId']
         resource = self.bpo.resources.get(resource_id)
