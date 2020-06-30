@@ -1,0 +1,56 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "circle"
+package     = pratiktest
+version     = "1.0"
+description = """
+This TOSCA document defines a circle Resource to demonstrate the interworkings of Ciena BP and TF Open APIs
+"""
+
+authors     = [
+    "Arjun (arjun.k02@infosys.com)"
+]
+
+resourceTypes {
+    circle {
+        title       = "circleResource"
+        description = "Base template for creating a circle shape"
+        derivedFrom = pratiktest.resourceTypes.geometricShape
+        properties {
+            color {
+                type ="string"
+                output = true
+            }
+            radius {
+                type = number
+                output = true
+            }
+            circleArea {
+                type = number
+                output = true
+            }
+            circumference {
+                type = number
+                output = true
+            }
+        }
+    }    
+}
+
+serviceTemplates{
+    circle {
+        title = circleTemplate
+        description = "A service template to create circle from base resource"
+        implements = pratiktest.resourceTypes.geometricShape
+
+        resources {
+            geometricShape {
+                type = geometricShape
+                properties {
+                    circumference = { getParam = circumference }
+                    circleArea = { getParam = circleArea }
+                    color = { getParam = color }
+                }
+            }
+        }
+    }
+}
