@@ -1,0 +1,71 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "geometricShape"
+package     = pratiktest
+version     = "1.0"
+description = """
+This TOSCA document defines a geometric-shape Resource to demonstrate the interworkings of Ciena BP and TF Open APIs
+"""
+
+authors     = [
+    "Pratik Sinha (pratik.sinha@bt.com)"
+]
+
+resourceTypes {
+    geometricShape {
+        title       = "geometricShapeResource"
+        description = "Base template for creating a geometric shape"
+        derivedFrom = tosca.resourceTypes.Root
+        properties {
+            color {
+                type ="string"
+                default = "red"
+            }
+            sides {
+                type = integer
+                default = 3
+            }
+            radius {
+                type = number
+                default = 10.0
+            }
+            circumference {
+                type= number
+                output = true
+            }
+            perimeter {
+                type= number
+                output = true
+            }
+            circleArea {
+                type = number
+                output = true
+            }
+            polygonArea {
+                type = number
+                output = true
+            }
+        }
+    }    
+}
+
+serviceTemplates = {
+    geometricShape {
+        title       = geometricShapeTemplate
+        description = Set geometric shape 
+        implements  = pratiktest.resourceTypes.geometricShape
+        plans {
+            activate {
+                type = remote
+                language = python
+                path = "plans.pratik_v1.Activate"
+            }
+        }
+        output {
+            circumference = {getAttr=[activate,circumference]}
+            circleArea = {getAttr=[activate,circleArea]}
+            perimeter = {getAttr=[activate,perimeter]}
+            polygonArea = {getAttr=[activate,polygonArea]}         
+        }
+    }   
+
+}
