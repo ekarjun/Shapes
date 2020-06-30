@@ -1,0 +1,43 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Data center"
+package     = vmware
+version     = "1.0"
+description = "This document defines resource type DataCenter"
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  DCBase = tosca.resourceTypes.DataCenter
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  DataCenter {
+    derivedFrom = DCBase
+    title = "vCloud Data Center"
+    description = """
+      This resource type represents a vCloud data center.
+    """
+
+    capabilities {
+      host {
+        type = Container
+        resourceTypes = [
+          tosca.resourceTypes.Hypervisor,
+          tosca.resourceTypes.PhysicalServer,
+          tosca.resourceTypes.L2Gateway,
+          tosca.resourceTypes.EthernetNetwork,
+          vmware.resourceTypes.vApp
+        ]
+      }
+
+      vnfManagers {
+        type = Endpoint
+        resourceTypes = [
+          tosca.resourceTypes.VNFManager
+        ]
+      }
+    }
+  }
+}

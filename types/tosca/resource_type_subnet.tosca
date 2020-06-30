@@ -1,0 +1,140 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Subnet resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Subnet resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  Subnet {
+    derivedFrom = Root
+    title = "Subnetwork"
+    description = """
+      A subnetwork of a L3 network representing a given address space.
+    """
+
+    properties {
+
+      network = {
+        title = "Network"
+        description = "Network this Subnet attaches to"
+        type = string
+      }
+
+      ipVersion = {
+        title = "IP Network Version"
+        description = "IP version (IPv4 or IPv6)"
+        type = string
+        enum = [ "IPv4", "IPv6" ]
+      }
+
+      prefix {
+        title = "Network Prefix"
+        description = "Network prefix in CIDR format"
+        type = string
+        format = ipv4-prefix
+      }
+
+      gatewayAddress {
+        title = "Gateway address"
+        description = "Address of the default gateway for the subnet"
+        type = string
+        format = ipv4-address
+        optional = true
+      }
+
+      gatewayEnabled {
+        title = "Is the gateway enabled?"
+        description = "Indicates if the gateway is enabled or not"
+        type = boolean
+        optional = true
+        output = true
+      }
+
+      dhcpEnabled {
+        title = "Is DHCP enabled on the subnet?"
+        description = "Indicated if DHCP protocol is enabled on the subnet or not"
+        type = boolean
+        optional = true
+      }
+
+      allocationPools {
+        title = "Address Allocation Pools"
+        description = """
+          Describes the address ranges that are allocated for DHCP.
+        """
+        type = array
+        optional = true
+        items {
+          type = object
+          additionalProperties = false
+          properties {
+            start {
+              title = "From Address"
+              description = "Lowest IP address of the allocation range"
+              type = string
+              format = ipv4-address
+            }
+
+            end {
+              title = "To Address"
+              description = "Highest IP address of the allocation range"
+              type = string
+              format = ipv4-address
+            }
+          }
+        }
+      }
+
+      nuageNet {
+        title = "NuageNet ID"
+        description = """
+          Optional property for specifying Nuage L2 or L3 domain this subnet connects to
+          Will be effective only if Nuage plugin is installed
+        """
+        type = string
+        optional = true
+      }
+
+      netPartition {
+        title = "Network Partition"
+        description = """
+          Optional property for specifying Nuage network partition for this subnet
+          Will be effective only if Nuage plugin is installed
+        """
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+
+      network {
+        title = "Network"
+        description = "A subnet requires a network"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Network ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      ports {
+        title = "Ethernet Ports"
+        description = "A subnet supports Ethernet ports"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.EthernetPort ]
+      }
+    }
+  }
+}

@@ -1,0 +1,117 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet Network resource type definition"
+package     = tidvim
+version     = "1.0"
+description = "This document defines the Ethernet Network resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Network = tosca.resourceTypes.Network
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EthernetNetwork {
+    derivedFrom = Network
+    title = "Ethernet Network"
+    description = """
+      An Ethernet network.
+    """
+
+    properties {
+
+      observed {
+        type = object
+        title = "Observed Properties"
+        description = "Properties of the network as presented by the provider."
+        optional = true
+
+        properties {
+
+          networkType {
+            title = "Network Type"
+            description = "Specifies the physical mechanism by which the virtual network is realized"
+            type = string
+            enum = ["ptp", "bridge_man", "bridge_data", "data"]
+          }
+
+          vlan {
+            title = "VLAN ID"
+            description = "Specifies the VLAN ID on the physical network that realizes the virtual network for VLAN networks"
+            type = integer
+            optional = true
+          }
+
+          adminStateUp {
+            title = "Admin State Up"
+            description = "The administrative state of the network (up/down)."
+            type = boolean
+          }
+
+          shared {
+            title = "Shared"
+            description = "Indicates whether this network is shared across tenants."
+            type = boolean
+          }
+
+        }
+      }
+
+      requested {
+        type = object
+        title = "Requested Properties"
+        description = "Properties of the network as requested by the user."
+        optional = true
+
+        properties {
+
+          networkType {
+            title = "Network Type"
+            description = "Specifies the physical mechanism by which the virtual network is realized"
+            type = string
+            enum = ["ptp", "bridge_man", "bridge_data", "data"]
+          }
+
+          adminStateUp {
+            title = "Admin State"
+            description = "The administrative state of the network (up/down)."
+            type = boolean
+            default = true
+            optional = true
+          }
+
+          shared {
+            title = "Shared"
+            description = "Indicates whether this network is shared across tenants."
+            type = boolean
+          }
+        }
+      }
+    }
+
+    requirements {
+
+      contained {
+        title = "Data Center"
+        description = "An Ethernet network is contained in a Data Center"
+        type = Container
+        resourceTypes = [ tidvim.resourceTypes.DataCenter ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      ports {
+        title = "Ethernet Ports"
+        description = "An Ethernet Network hosts Ethernet ports"
+        type = Container
+        resourceTypes = [ tidvim.resourceTypes.EthernetPort ]
+      }
+
+    }
+  }
+}

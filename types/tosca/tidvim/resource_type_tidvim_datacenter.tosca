@@ -1,0 +1,33 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Data center"
+package     = tidvim
+version     = "1.0"
+description = "This document defines resource type DataCenter"
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Physical = tosca.resourceTypes.Physical
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  DataCenter {
+    derivedFrom = Physical
+    title = "Data Center"
+    description = """
+      This resource type represents a data center.
+    """
+
+    capabilities {
+      host {
+        type = Container
+        resourceTypes = [
+          tidvim.resourceTypes.EthernetNetwork
+          // TODO since TID VIM APIs don't document hosts then we contain VMs directly here
+          tidvim.resourceTypes.VirtualMachine
+        ]
+      }
+    }
+  }
+}

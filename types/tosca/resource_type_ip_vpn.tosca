@@ -1,0 +1,707 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "IP VPN Service"
+package     = tosca
+version     = "1.0"
+description = "This document defines the IP VPN service as a resource type"
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  IpVpnService {
+    derivedFrom = NFVService
+    title = "IP VPN"
+    description = """
+      This resource type defines a sample service providing service.
+    """
+
+    properties {
+
+      // "Customer" info panel
+
+      customer {
+        title = "Customer Name"
+        description = "Name of the customer"
+        type = string
+      }
+
+      customerVlanId {
+        title = "VLAN Id"
+        description = "VLAN id associated with customer"
+        type = integer
+        format = vlan-id
+      }
+
+      customerVnfIp {
+        title = "Customer VNF-side IP"
+        description = "Customer's VNF-side IP address (e.g., 192.168.10.254/24)"
+        type = string
+        format = ipv4-interface
+      }
+
+      // "Placement" panel
+
+      domainName {
+        // should be chosen from title's of existing versa.resourceTypes.Director
+        title = "Domain Name"
+        description = "Name of the Versa Domain to be used for deploying the service"
+        type = string
+      }
+
+      globalOrgName {
+        // should be chosen from title's of existing versa.resourceTypes.Organization
+        title = "Parent Organization Name"
+        description = "Name of the parent Versa Organization for the service"
+        type = string
+      }
+
+      appliance {
+        // should be chosen from title's of existing versa.resourceTypes.Appliance
+        title = "Appliance Name"
+        description = "Name of the appliance within the domain"
+        type = string
+      }
+
+      privateSideVPort {
+        title = "Private Side vPort"
+        description = "Customer facing v-port of VNF (e.g., vni-0/1)"
+        type = string
+      }
+
+      publicSideVPort {
+        title = "Public Side vPort"
+        description = "Public facing v-port of VNF (e.g., vni-0/2)"
+        type = string
+      }
+
+      // Routing panel
+
+      staticRouting {
+        title = "Static Routing Configuration"
+        description = "Configuration attributes for static routing"
+        optional = true
+        type = array
+        items {
+          type = object
+          additionalProperties = false
+          properties {
+            routeDestination {
+              title = "Route Destination"
+              description = "IP route prefix (e.g., 192.168.10.0/24)"
+              type = string
+              format = ipv4-prefix
+            }
+
+            routeNextHop {
+              title = "Route Next-Hop"
+              description = "Next-Hop IP address (e.g., 192.168.10.1)"
+              type = string
+              format = ipv4-address
+            }
+          }
+        }
+      }
+
+      bgpRouting {
+        title = "BGP Routing Information"
+        description = "TBF"
+        type = object
+        optional = true
+
+        properties {
+
+          bgpRouterId {
+            title = "BGP Router ID"
+            description = "BGP router ID of the customer (e.g., 192.168.10.254)"
+            type = string
+            format = ipv4-address
+          }
+
+          bgpLocalAs {
+            title = "BGP Local AS Number"
+            description = "BGP local AS number for the customer (e.g., 65000)"
+            type = integer
+            format = bgp-as
+          }
+
+          bgpRouterLocalAddress {
+            title = "BGP Local Address"
+            description = "Local address to use in BGP packets sent (e.g., 192.168.10.254)"
+            type = string
+            format = ipv4-address
+            optional = true
+          }
+
+          bgpPeerAs {
+            title = "BGP Peer AS Number"
+            description = "BGP peer AS number for the customer (e.g., 1822)"
+            type = integer
+            format = bgp-as
+          }
+
+          bgpPeerAddress {
+            title = "BGP Peer Address"
+            description = "BGP peer address for the customer (e.g., 192.168.10.1)"
+            type = string
+            format = ipv4-address
+          }
+        }
+      }
+
+      // Firewall config panel
+
+      firewall {
+
+        title = "Firewall Configuration"
+        description = "All configurations related to firewall settings"
+        optional = true
+        updatable = true
+        additionalProperties = false
+        type = object
+        properties {
+
+          prefix {
+            title = "Firewall Rules"
+            description = "Rules controlling flows"
+            type = array
+            updatable = true
+            items {
+              type = object
+              properties {
+
+                service {
+                  title = "Service"
+                  description = """Service type such as "Custom", "DNS", "ESP", "FTP", "GRE", "HTTP", "HTTPS""""
+                  type = string
+                  enum = [
+                    "Custom",
+                    "DNS",
+                    "ESP",
+                    "FTP",
+                    "GRE",
+                    "HTTP",
+                    "HTTPS",
+                    "ICMP",
+                    "IGMP",
+                    "IMAP",
+                    "ISAKMP",
+                    "L2TP",
+                    "LDAP",
+                    "NTP",
+                    "NetBIOS",
+                    "OSPF",
+                    "PIM",
+                    "POP3",
+                    "POP3S",
+                    "RADIUS",
+                    "RIP",
+                    "RTSP",
+                    "SCTP",
+                    "SMTP",
+                    "SMTPS",
+                    "SNMP",
+                    "SNMP-TRAP",
+                    "SSH",
+                    "TCP",
+                    "TELNET",
+                    "TFTP",
+                    "UDP"
+                  ]
+                  updatable = true
+                }
+
+                protocol {
+                  title = "Custom Protocol"
+                  description = """New service protocol type such as "TCP", "UDP", "ICMP", "TCP_OR_UDP""""
+                  type = string
+                  enum = [
+                    "TCP",
+                    "UDP",
+                    "ICMP",
+                    "ESP",
+                    "AH",
+                    "TCP_OR_UDP"
+                  ]
+                  optional = true
+                  updatable = true
+                }
+
+                portType {
+                  title = "Port Dst/Src"
+                  description = "Indicates if the port range is for destination or source"
+                  type = string
+                  enum = [ "destination", "source" ]
+                  optional = true
+                  updatable = true
+                }
+
+                fromPort {
+                  title = "Port Low"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive lowest value for the port range.
+                  """
+                  type = integer
+                  format = port-number
+                  optional = true
+                  updatable = true
+                }
+
+                toPort {
+                  title = "Port High"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive highest value for the port range.
+                  """
+                  type = integer
+                  format = port-number
+                  optional = true
+                  updatable = true
+                }
+
+                sourcePrefix {
+                  title = "Src Prefix"
+                  description = "Source CIDR to which FW is applied"
+                  type = string
+                  format = ipv4-prefix
+                  optional = true
+                  updatable = true
+                }
+
+                destinationPrefix {
+                  title = "Dst Prefix"
+                  description = "Destination CIDR to which FW is applied"
+                  type = string
+                  format = ipv4-prefix
+                  optional = true
+                  updatable = true
+                }
+
+                action {
+                  title = "Action"
+                  description = """Firewall action as "allow", "deny", "reject""""
+                  type = string
+                  enum = [ "allow", "deny", "reject" ]
+                  updatable = true
+                }
+
+              }
+            }
+          }
+        }
+      }
+
+      // NAT config panels
+
+      staticNatPrefix {
+        title = "Static NAT Configuration with Prefix"
+        description = "Configuration attributes for static NAT with prefix"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            fromPrefix {
+              title = "From Prefix"
+              description = "Customer IP address range expressed as CIDR to which NAT is applied (e.g., 192.168.10.0/24)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            toPrefix {
+              title = "To Prefix"
+              description = "Public IP address range expressed as CIDR (e.g., 10.20.30.0/24)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      staticNatRange {
+        title = "Static NAT Configuration with Range"
+        description = "Configuration attributes for static NAT with address range"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            fromIpAddressLow {
+              title = "From IP Address Low"
+              description = "Bottom of Customer IP address range to which NAT is applied (e.g., 192.168.10.200)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            fromIpAddressHigh {
+              title = "From IP Address High"
+              description = "Top of Customer IP address range to which NAT is applied (e.g., 192.168.10.220)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            toIpAddressLow {
+              title = "To IP Address Low"
+              description = "Bottom of Public IP address range (e.g., 10.20.30.100)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            toIpAddressHigh {
+              title = "To IP Address High"
+              description = "Top of Public IP address range (e.g., 10.20.30.120)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      dynamicNatPrefix {
+        title = "Dynamic NAT Configuration with Prefix"
+        description = "Configuration attributes for dynamic NAT with Prefix"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            appliedTo {
+              title = "From Prefix"
+              description = "Customer IP address range expressed as CIDR to which NAT is applied (e.g., 192.168.10.0/24)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            natPool {
+              title = "To Pool"
+              description = "Dynamic IP address pool expressed as CIDR (e.g., 10.20.30.0/24)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      dynamicNatRange {
+        title = "Dynamic NAT Configuration with Range"
+        description = "Configuration attributes for dynamic NAT with address range"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            appliedToLow {
+              title = "From IP Address Low"
+              description = "Bottom of Customer IP address range to which NAT is applied (e.g., 192.168.10.200)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            appliedToHigh {
+              title = "From IP Address High"
+              description = "Top of Customer IP address range to which NAT is applied (e.g., 192.168.10.220)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            natPoolLow {
+              title = "To Pool Low"
+              description = "Bottom of Dynamic IP address pool expressed as IP Address (e.g., 10.20.30.100)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            natPoolHigh {
+              title = "To Pool High"
+              description = "Top of Dynamic IP address pool expressed as IP Address (e.g., 10.20.30.120)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      portAddressTranslationPrefix {
+        title = "Port Address Translation (PAT) Configuration with Prefix"
+        description = "Configuration attributes for port address translation (PAT) with Prefix"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            originalSourceIp {
+              title = "Original IP"
+              description = "Original Source IP address of outgoing flow (e.g., 192.168.10.24/32)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            forwardSourceIp {
+              title = "Forward IP"
+              description = "Forward Source IP address of outgoing flow (e.g., 10.20.30.24/32)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            autoPortAllocation {
+              title = "Auto Port Allocation"
+              description = "Indicates if port allocation should be done automatically"
+              type = boolean
+              default = true
+              updatable = true
+            }
+
+            forwardSourcePortLow {
+              title = "Forward Port Low"
+              description = "Optional Low end range of forward source port of outgoing flow"
+              type = integer
+              format = port-number
+              optional = true
+              updatable = true
+            }
+
+            forwardSourcePortHigh {
+              title = "Forward Port High"
+              description = "Optional High end range of forward source port of outgoing flow"
+              type = integer
+              format = port-number
+              optional = true
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      portAddressTranslationRange {
+        title = "Port Address Translation (PAT) Configuration with Range"
+        description = "Configuration attributes for port address translation (PAT) with address range"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            originalSourceIpLow {
+              title = "Original IP Low"
+              description = "Bottom of Original Source IP address range of outgoing flow (e.g., 192.168.10.200)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            originalSourceIpHigh {
+              title = "Original IP High"
+              description = "Top of Original Source IP address range of outgoing flow (e.g., 192.168.10.220)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            forwardSourceIp {
+              title = "Forward IP"
+              description = "Forward Source IP address of outgoing flow (e.g., 10.20.30.24/32)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            autoPortAllocation {
+              title = "Auto Port Allocation"
+              description = "Indicates if port allocation should be done automatically"
+              type = boolean
+              default = true
+              updatable = true
+            }
+
+            forwardSourcePortLow {
+              title = "Forward Port Low"
+              description = "Optional Low end range of forward source port of outgoing flow"
+              type = integer
+              format = port-number
+              optional = true
+              updatable = true
+            }
+
+            forwardSourcePortHigh {
+              title = "Forward Port High"
+              description = "Optional High end range of forward source port of outgoing flow"
+              type = integer
+              format = port-number
+              optional = true
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      portForwardingNatPrefix {
+        title = "Port Forwarding NAT Configuration with Prefix"
+        description = "Configuration attributes for port forwarding NAT with prefix"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            originalDestinationIp {
+              title = "Original IP"
+              description = "Original destination IP address of incoming flow (e.g., 10.20.30.24/32)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            originalDestinationPort {
+              title = "Original Port"
+              description = "Original destination port of incoming flow (e.g., 22)"
+              type = integer
+              format = port-number
+              updatable = true
+            }
+
+            forwardDestinationIp {
+              title = "Forward IP"
+              description = "Forward destination IP address of incoming flow (e.g., 192.168.10.24/32)"
+              type = string
+              format = ipv4-prefix
+              updatable = true
+            }
+
+            forwardDestinationPort {
+              title = "Forward Port"
+              description = "Forward destination port of incoming flow (e.g., 22)"
+              type = integer
+              format = port-number
+              updatable = true
+            }
+
+          }
+        }
+      }
+
+      portForwardingNatRange {
+        title = "Port Forwarding NAT Configuration with Address Range"
+        description = "Configuration attributes for port forwarding NAT with address range"
+        optional = true
+        updatable = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            originalDestinationIpLow {
+              title = "Original IP Low"
+              description = "Bottom of Original destination IP address range of incoming flow (e.g., 10.20.30.100)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            originalDestinationIpHigh {
+              title = "Original IP High"
+              description = "Top of Original destination IP address range of incoming flow (e.g., 10.20.30.120)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            originalDestinationPort {
+              title = "Original Port"
+              description = "Original destination port of incoming flow (e.g., 22)"
+              type = integer
+              format = port-number
+              updatable = true
+            }
+
+            forwardDestinationIpLow {
+              title = "Forward IP Low"
+              description = "Bottom of Forward destination IP address range of incoming flow (e.g., 192.168.10.200)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            forwardDestinationIpHigh {
+              title = "Forward IP High"
+              description = "Top of Forward destination IP address range of incoming flow (e.g., 192.168.10.220)"
+              type = string
+              format = ipv4-address
+              updatable = true
+            }
+
+            forwardDestinationPort {
+              title = "Forward Port"
+              description = "Forward destination port of incoming flow (e.g., 22)"
+              type = integer
+              format = port-number
+              updatable = true
+            }
+
+          }
+        }
+      }
+    }
+
+    requirements {
+
+      appliance {
+        type = Container
+      }
+
+    }
+
+  }
+}

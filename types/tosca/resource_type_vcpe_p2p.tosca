@@ -1,0 +1,188 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Point-to-Point Virtual CPE resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Point-to-Point vCPE resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  P2pVcpe {
+    derivedFrom = NFVService
+    abstract = false
+    title = "vCPE (P2P)"
+    description = """
+      Two interconnected vCPE resources holding virtual CPE type of VNFs.
+    """
+
+    properties {
+
+      firewallEnabled {
+        title = "Is Firewall enabled on the vCPE?"
+        description = "Indicates if Firewall is enabled on the vCPE or not"
+        type = boolean
+        default = true
+      }
+
+      encryptionEnabled {
+        title = "Is Encryption enabled on the vCPE?"
+        description = "Indicates if Encryption is enabled on the vCPE or not"
+        type = boolean
+        default = true
+      }
+
+      aEndUniNet {
+        title = "UNI network"
+        description = "UUID of the UNI network where the VNFs of the A-End vCPE shall be accessible to the CPE hosts"
+        type = string
+      }
+
+      zEndUniNet {
+        title = "UNI network"
+        description = "UUID of the UNI network where the VNFs of the Z-End vCPE shall be accessible to the CPE hosts"
+        type = string
+      }
+
+      nniNet {
+        title = "NNI network"
+        description = "UUID of the NNI network where the vCPE shall be interconnecting to the far-end vCPEs"
+        type = string
+      }
+
+      localNet {
+        title = "Local network"
+        description = "UUID of the local network internal to the vCPE"
+        type = string
+      }
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the vCPE VNFs shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the vCPE VNF VMs"
+        type = string
+      }
+
+      keyName {
+        title = "Encryption SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the VNF instances of the vCPE"
+        type = string
+      }
+
+      aEndDeploymentLocation {
+        title = "VNF deployment location"
+        description = "Host placement directive to OpenStack for the VNF instances of the A-End vCPE"
+        type = string
+      }
+
+      zEndDeploymentLocation {
+        title = "VNF deployment location"
+        description = "Host placement directive to OpenStack for the VNF instances of the Z-End vCPE"
+        type = string
+      }
+
+      aEndPort {
+        title = "A-End Port"
+        description = "Unique ID of A-end UNI port"
+        type = string
+      }
+
+      aEndVlanId {
+        title = "A-End VLAN Tag"
+        description = "A-end VLAN tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+      aEndBwProfile {
+        title = "A-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of A-End"
+        type = string
+      }
+
+      zEndPort {
+        title = "Z-End Port"
+        description = "Unique ID of Z-end UNI port"
+        type = string
+      }
+
+      zEndVlanId {
+        title = "Z-End VLAN Tag"
+        description = "Z-end VLAN tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+      zEndBwProfile {
+        title = "Z-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of Z-End"
+        // pattern = ...
+        type = string
+      }
+
+    }
+
+    requirements {
+
+      uniNetworks {
+        title = "UNI Virtual Network"
+        description = "A vCPE requires at least two provider network connections"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.ProviderNetwork ]
+        minimum = 1
+        maximum = 1
+      }
+
+      nniNetworks {
+        title = "NNI Virtual Network"
+        description = "A vCPE requires at least two provider network connections"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.ProviderNetwork ]
+        minimum = 1
+        maximum = 1
+      }
+
+      hypervisor {
+        title = "Hypervisor"
+        description = "A vCPE is hosted on a hypervisor"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Hypervisor ]
+      }
+
+    }
+
+    capabilities {
+
+      vcpe {
+        title = "vCPE"
+        description = "Virtual CPE"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Vcpe ]
+        minimum = 2
+        maximum = 2
+      }
+
+      evpl {
+        title = "EVPL"
+        description = "Ethernet Virtual Private Line"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Evpl ]
+        minimum = 1
+        maximum = 1
+      }
+
+    }
+
+  }
+}

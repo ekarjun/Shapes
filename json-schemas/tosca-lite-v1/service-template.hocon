@@ -1,0 +1,146 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/service-template#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Service Template"
+
+type        = object
+
+required    = [ title, description, implements ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type        = string
+    maxLength   = 64
+  }
+
+  description {
+    description = "Description of this resource type"
+    anyOf = [
+      { type = string},
+      { "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/ref" }
+    ]
+  }
+
+  abstract {
+    description = """
+      If true, the resource type cannot be instantiated, but only to be used as a basis
+      for deriving other resource types.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  final {
+    description = """
+      If true, no other resource type(s) can be derived from this resource type.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  derivedFrom {
+    description = "Reference to a template from which this template is derived from."
+    type        = [
+      string, // FIXME use a more specific type
+      array
+    ]
+  }
+
+  implements {
+    description = "Reference to a resource type that this template implements"
+    type = string
+  }
+
+  properties {
+    description = "Optional properties of this capability type"
+    anyOf = [
+      { "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/ref" },
+      {
+        type        = object
+        patternProperties {
+          "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+            "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+          }
+        }
+        additionalProperties = false
+      }
+    ]
+  }
+
+  artifacts {
+    description = "Forward declaration of all file artifacts used by the template"
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/file-artifact#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  resources {
+    description = "Declarative definition of the resources that are to be created and managed for this service"
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-resource#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  trigger {
+    description = """
+      Declarative derivation of the properties of the resource type from the individual properties of subresources.
+      Executed at creation (activation) and on update of child resources.
+    """
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        // any type
+      }
+    }
+    additionalProperties = false
+  }
+
+  output {
+    description = """
+      Declarative derivation of the output properties of the resource type from the individual properties of
+      subresources. Executed once the creation (activation) of the template is complete.
+    """
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        // any type
+      }
+    }
+    additionalProperties = false
+  }
+
+  plans {
+    description = """Imperative operation implementations"""
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/plan#"
+      }
+    }
+  }
+
+  validators {
+    description = """Imperative validator implementations"""
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/plan#"
+      }
+    }
+  }
+
+}
+
+additionalProperties = false

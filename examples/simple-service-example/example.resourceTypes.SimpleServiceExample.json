@@ -1,0 +1,29 @@
+{
+    "example.resourceTypes.SimpleServiceExample" : {
+        "cssClass": "simple-service-example",
+        "fieldGroups": [
+            {
+                "name": "Group A",
+                "description": "Enter the configuration details for your new Service",
+                "fields": {
+                    "property1": {
+                        "type": "text",
+                        "label": "Label for Property A",
+                        "maxLength": 64
+                    }
+                }
+            },
+            {
+                "name": "Group B",
+                "description": "Enter more configuration details for your new Service",
+                "fields": {
+                    "property2": {
+                        "type": "text",
+                        "label": "Remote for Property B",
+                        "maxLength": 256
+                    }
+                }
+            }
+        ]
+    }
+}

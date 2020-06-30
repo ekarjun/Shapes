@@ -1,0 +1,135 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual CPE resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the vCPE resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Vcpe {
+    derivedFrom = NFVService
+    title = vCPE
+    description = """
+      vCPE resource holding virtual CPE type of VNFs.
+    """
+
+    properties {
+
+      firewallEnabled {
+        title = "Is Firewall enabled on the vCPE?"
+        description = "Indicates if Firewall is enabled on the vCPE or not"
+        type = boolean
+        default = true
+      }
+
+      encryptionEnabled {
+        title = "Is Encryption enabled on the vCPE?"
+        description = "Indicates if Encryption is enabled on the vCPE or not"
+        type = boolean
+        default = true
+      }
+
+      uniNet {
+        title = "UNI network"
+        description = "UUID of the UNI network where the VNFs of the vCPE shall be accessible to the CPE hosts"
+        type = string
+      }
+
+      nniNet {
+        title = "NNI network"
+        description = "UUID of the NNI network where the vCPE shall be interconnecting to the far-end vCPEs"
+        type = string
+      }
+
+      localNet {
+        // TODO: search the local network based on name??
+        title = "Local network"
+        description = "UUID of the local network internal to the vCPE"
+        type = string
+      }
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the vCPE VNFs shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the vCPE VNF VMs"
+        type = string
+      }
+
+      keyName {
+        title = "Encryption SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the VNF instances of the vCPE"
+        type = string
+      }
+
+      deploymentLocation {
+        title = "VNF deployment location"
+        description = "Host placement directive to OpenStack for the VNF instances of the vCPE"
+        type = string
+      }
+
+    }
+
+    requirements {
+
+      UNInetworks {
+        title = "UNI Virtual Network"
+        description = "A vCPE requires at least two provider network connections"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.ProviderNetwork ]
+        minimum = 1
+        maximum = 1
+      }
+
+      NNInetworks {
+        title = "NNI Virtual Network"
+        description = "A vCPE requires at least two provider network connections"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.ProviderNetwork ]
+        minimum = 1
+        maximum = 1
+      }
+
+      hypervisor {
+        title = "Hypervisor"
+        description = "A vCPE is hosted on a hypervisor"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Hypervisor ]
+      }
+
+    }
+
+    capabilities {
+
+      firewall {
+        title = "Virtual Firewall"
+        description = "A Virtual CPE requires a Virtual Firewall if enabled"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VirtualFirewall ]
+        minimum = 0
+        maximum = 1
+      }
+
+      encryption {
+        title = "Virtual Encryption"
+        description = "A Virtual CPE requires a Virtual Encryption if enabled"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VirtualEncryption ]
+        minimum = 0
+        maximum = 1
+      }
+
+    }
+
+  }
+}

@@ -1,0 +1,44 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "vApp Network resource type definition"
+package     = vmware
+version     = "1.0"
+description = "This documents defines the vApp network resource type."
+authors     = [ "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  EthernetNetwork = tosca.resourceTypes.EthernetNetwork
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  vAppNetwork {
+    derivedFrom = EthernetNetwork
+    title = "vApp Network"
+    description = """
+      Allows virtual machines within a vApp to communicate with each other and connect to Organization vDC networks.
+    """
+
+    properties {
+
+    }
+
+    requirements {
+      contained {
+        title = "Contained"
+        description = "A vApp network is contained in an Organization VDC network"
+        type = Container
+        resourceTypes = [ vmware.resourceTypes.OrgVdcNetwork ]
+      }
+    }
+
+    capabilities {
+      network {
+        title = "network"
+        description = "A vApp network provides network connectivity to a vApp"
+        type = Container
+        resourceTypes = [ vmware.resourceTypes.vApp ]
+      }
+    }
+  }
+}

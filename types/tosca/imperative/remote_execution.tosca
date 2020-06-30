@@ -1,0 +1,69 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template to demo remote imperative style operations"
+package     = tosca
+version     = "1.0"
+description = """
+A type and a template to show how a callout to active and terminate can be used.
+"""
+authors     = [
+  "Eko Prasetya (eprasety@ciena.com)"
+]
+
+resourceTypes {
+
+  RemoteDemoService {
+    title = "Remote Demo Service"
+    description = "A simple type with a few properties for remote script execution, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+      }
+
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+      }
+
+      prop3 {
+        title = "Prop3"
+        description = "Property 3"
+        type = integer
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  RemoteSample {
+    title = Imperative Implementation
+    description = "To demo a remote imperative implementation of DemoService"
+    implements = tosca.resourceTypes.RemoteDemoService
+
+    plans {
+
+      activate {
+        type = remote
+        language = python
+        path = "scripts.subfunc1.Activate"
+      }
+
+      update {
+        type = remote
+        language = python
+        path = "scripts.subfunc1.Update"
+      }
+
+      terminate {
+        type = remote
+        language = python
+        path = "scripts.subfunc1.Terminate"
+      }
+    }
+  }
+}

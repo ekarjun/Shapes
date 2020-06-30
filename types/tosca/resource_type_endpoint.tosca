@@ -1,0 +1,49 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic endpoint resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the EndPoint resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EndPoint {
+    derivedFrom = Root
+    title = "Endpoint"
+    description = """
+      Generic end-point resource.
+    """
+
+    properties {
+
+    }
+
+    requirements {
+
+      port {
+        title = "Port"
+        description = "The port which this end-point is attached to"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Port ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      terminate {
+        title = "Link"
+        description = "An endpoint terminates a link"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Link ]
+        maximum = 1
+      }
+    }
+  }
+}

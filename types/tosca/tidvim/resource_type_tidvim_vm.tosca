@@ -1,0 +1,477 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "VM resource type definition"
+package     = tidvim
+version     = "1.0"
+description = "This document defines the VirtualMachine resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+   Server = tidvim.resourceTypes.Server
+}
+
+resourceTypes {
+
+  VirtualMachine {
+    derivedFrom = Server
+    title = "Virtual Machine (VM)"
+    description = """
+      A virtual machine capable of hosting software components.
+    """
+
+    properties {
+      observed {
+        type = object
+        title = "Observed Properties"
+        description = "Realized value of properties in provider"
+        optional = true
+        properties {
+
+          ram {
+            title = "RAM"
+            description = "Amount of memory (normal) allocated to the VM"
+            type = integer
+            optional = true
+          }
+
+          networks {
+            title = "Bridged Networks"
+            description = ""
+            type = array
+            optional = true
+            items {
+              type = object
+              properties {
+                name {
+                  title = "Name"
+                  description = "Proposed name for the interface."
+                  type = string
+                  optional = true
+                }
+                bandwidth {
+                  title = "Bandwidth"
+                  description = "Maximum needed bandwidth. No decimals allowed, units can be Gbps, Mbps."
+                  type = string
+                  optional = true
+                }
+                vpci {
+                  title = "PCI Bus"
+                  description = "PCI bus at virtual machine."
+                  type = string
+                  optional = true
+                }
+                net_id {
+                  title = "Network Identifier"
+                  description = "Specifies network attached to."
+                  type = string
+                  optional = true
+                }
+                iface_id {
+                  title = "Interface Identifier"
+                  description = "Specifies the unique identifier of the interface/port."
+                  type = string
+                  optional = true
+                }
+                mac_address {
+                  title = "MAC Address"
+                  description = "Specifies MAC address assigned to the network interface."
+                  type = string
+                  optional = true
+                }
+              }
+            }
+          }
+          extended {
+            title = "Extended Properties"
+            description = "Additional settings providing fine-grained VM scheduling."
+            type = object
+            optional = true
+            properties {
+              processorRanking {
+                title = "Processor Ranking"
+                description = "A ranking of minimum processor performance."
+                type = integer
+                optional = true
+              }
+              devices {
+                title = "Extra Devices"
+                description = "List of extra devices as usb, disks, etc."
+                type = array
+                optional = true
+                items {
+                  type = object
+                  properties {
+                    type {
+                      title = "Device Type"
+                      description = "Type of the device."
+                      type = string
+                      enum = ["usb", "disk"]
+                    }
+                    vpci {
+                      title = "Virtual PCI Bus"
+                      description = "Desired virtual pci bus allocation when instance is deployed."
+                      type = string
+                    }
+                  }
+                }
+              }
+              numas {
+                title = "NUMA constraints"
+                description = "List of requirements set regarding memory, data-plane interfaces and CPUs."
+                type = array
+                optional = true
+                items {
+                  type = object
+                  properties {
+                    memory {
+                      title = "Memory"
+                      description = "Amount of memory (hugepages) needed in gigabytes (GB)."
+                      type = integer
+                      optional = true
+                    }
+                    cores {
+                      title = "Cores"
+                      description = "Use physical cores, no hyper-threading."
+                      type = integer
+                      optional = true
+                    }
+                    threads {
+                      title = "Threads"
+                      description = "Use hyperthreading with no the restriction about the physical cores."
+                      type = integer
+                      optional = true
+                    }
+                    pairedThreads {
+                      title = "Paired Threads"
+                      description = "Use full physical cores with hyperthreading."
+                      type = integer
+                      optional = true
+                    }
+                    coresId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = integer
+                      optional = true
+                    }
+                    threadsId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = integer
+                      optional = true
+                    }
+                    pairedThreadsId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = array
+                      optional = true
+                    }
+                    interfaces {
+                      title = "Interfaces"
+                      description = "List of data plane interfaces."
+                      type = array
+                      optional = true
+                      items {
+                        type = object
+                        properties {
+                          name {
+                            title = "Name"
+                            description = "Proposed name for the interface."
+                            type = string
+                            optional = true
+                          }
+                          dedicated {
+                            title = "Is Dedicated"
+                            description = "If dedicated full physical port is assigned in pass-through, otherwise SR-IOV port is assigned in pass-through."
+                            type = string
+                            enum = ["yes", "no"]
+                            optional = true
+                          }
+                          bandwidth {
+                            title = "Bandwidth"
+                            description = "Maximum needed bandwidth. No decimals allowed, units can be Gbps, Mbps."
+                            type = string
+                            optional = true
+                          }
+                          vpci {
+                            title = "PCI Bus"
+                            description = "PCI bus at virtual machine."
+                            type = string
+                            optional = true
+                          }
+                          iface_id {
+                            title = "Interface ID"
+                            description = "Uniquely identifies the interface"
+                            type = string
+                            optional = true
+                          }
+                          net_id {
+                            title = "Network ID"
+                            description = "Identifies the network this interface is attached to"
+                            type = string
+                            optional = true
+                          }
+                          source {
+                            title = "Source"
+                            description = "Source host PCI address. Informative for debugging purposes."
+                            type = string
+                            optional = true
+                          }
+                          vpci {
+                            title = "PCI Bus"
+                            description = "PCI bus at virtual machine."
+                            type = string
+                            optional = true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      requested {
+        type = object
+        title = "Requested Properties"
+        description = "Requested value of properties in Planet Orchestrate"
+        optional = true
+        properties {
+          ram {
+            title = "RAM"
+            description = "Amount of memory (normal) to request for the server."
+            optional = true
+            type = integer
+          }
+          image {
+            title = "Image"
+            description = "Specifies the image to run on the server."
+            type = string
+          }
+          networks {
+            title = "Bridged Networks"
+            description = ""
+            type = array
+            optional = true
+            items {
+              type = object
+              properties {
+                name {
+                  title = "Name"
+                  description = "Proposed name for the interface."
+                  type = string
+                  optional = true
+                }
+                bandwidth {
+                  title = "Bandwidth"
+                  description = "Maximum needed bandwidth. No decimals allowed, units can be Gbps, Mbps."
+                  type = string
+                  optional = true
+                }
+                vpci {
+                  title = "PCI Bus"
+                  description = "PCI bus at virtual machine."
+                  type = string
+                  optional = true
+                }
+                uuid {
+                  title = "Network Identifier"
+                  description = "Specifies network to attach to."
+                  type = string
+                  optional = true
+                }
+                mac_address {
+                  title = "MAC Address"
+                  description = "Specifies MAC address to assign to the network interface."
+                  type = string
+                  optional = true
+                }
+              }
+            }
+          }
+          extended {
+            title = "Extended Properties"
+            description = "Additional settings providing fine-grained VM scheduling."
+            type = object
+            properties {
+              processorRanking {
+                title = "Processor Ranking"
+                description = "A ranking of minimum processor performance."
+                type = integer
+              }
+              devices {
+                title = "Extra Devices"
+                description = "List of extra devices as usb, disks, etc."
+                type = array
+                optional = true
+                items {
+                  type = object
+                  properties {
+                    type {
+                      title = "Device Type"
+                      description = "Type of the device."
+                      type = string
+                      enum = ["usb", "disk"]
+                    }
+                    vpci {
+                      title = "Virtual PCI Bus"
+                      description = "Desired virtual pci bus allocation when instance is deployed."
+                      type = string
+                    }
+                  }
+                }
+              }
+              numas {
+                title = "NUMA constraints"
+                description = "List of requirements set regarding memory, data-plane interfaces and CPUs."
+                type = array
+                items {
+                  type = object
+                  properties {
+                    memory {
+                      title = "Memory"
+                      description = "Amount of memory (hugepages) needed in gigabytes (GB)."
+                      type = integer
+                    }
+                    cores {
+                      title = "Cores"
+                      description = "Use physical cores, no hyper-threading."
+                      type = integer
+                      optional = true
+                    }
+                    threads {
+                      title = "Threads"
+                      description = "Use hyperthreading with no the restriction about the physical cores."
+                      type = integer
+                      optional = true
+                    }
+                    pairedThreads {
+                      title = "Paired Threads"
+                      description = "Use full physical cores with hyperthreading."
+                      type = integer
+                      optional = true
+                    }
+                    coresId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = integer
+                      optional = true
+                    }
+                    threadsId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = integer
+                      optional = true
+                    }
+                    pairedThreadsId {
+                      title = "Virtual CPU identifiers"
+                      description = "Specify VCPU at the VM. Identifiers must start at zero, not contain gaps, and not overlap."
+                      type = array
+                      items.type = array
+                      optional = true
+                    }
+                    interfaces {
+                      title = "Interfaces"
+                      description = "List of data plane interfaces."
+                      type = array
+                      optional = true
+                      items {
+                        type = object
+                        properties {
+                          name {
+                            title = "Name"
+                            description = "Proposed name for the interface."
+                            type = string
+                            optional = true
+                          }
+                          dedicated {
+                            title = "Is Dedicated"
+                            description = "If dedicated full physical port is assigned in pass-through, otherwise SR-IOV port is assigned in pass-through."
+                            type = string
+                            enum = ["yes", "no"]
+                            optional = true
+                          }
+                          bandwidth {
+                            title = "Bandwidth"
+                            description = "Maximum needed bandwidth. No decimals allowed, units can be Gbps, Mbps."
+                            type = string
+                          }
+                          vpci {
+                            title = "PCI Bus"
+                            description = "PCI bus at virtual machine."
+                            type = string
+                            optional = true
+                          }
+                          uuid {
+                            title = "Network Identifier"
+                            description = "Specifies network to attach to."
+                            type = string
+                            optional = true
+                          }
+                          source {
+                            title = "Source"
+                            description = "Source host PCI address. Informative for debugging purposes."
+                            type = string
+                            optional = true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      userData {
+        title = "User Data"
+        description = "User data string passed into the VM during creation"
+        type = string
+        default = ""
+        optional = true
+      }
+
+    }
+
+    groupings = [
+      {
+        title = "Details"
+        description = "Use this tab to enter the details for creating your new VM."
+        properties = ["label", "providerResourceId", "image"]  // FIXME: "flavor" is the product itself and should be included
+      },
+      {
+        title = "Networking"
+        description = "Select the network(s) you would like this VM to be attached to."
+        properties = ["networks"]
+      },
+      //{
+      //  title = "Post-Creation"
+      //  description = "Use this tab to provide a shell script to execute once the VM is instantiated."
+      //  properties = []  // FIXME: we do not seem to have a field for script in the model?
+      //}
+    ]
+
+    requirements {
+
+      contained {
+        title = "Data Center"
+        description = "A vm is contained in a Data Center"
+        type = tosca.capabilityTypes.Container
+        resourceTypes = [ tosca.resourceTypes.DataCenter ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+
+
+}

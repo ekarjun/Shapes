@@ -1,0 +1,70 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Heat Stack resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the HeatStack resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+
+  HeatStack {
+
+    derivedFrom = Root
+    title = "Heat Stack"
+    description = """
+      An OpenStack Heat based "Stack", a template based composition in OpenStack.
+    """
+
+    properties {
+
+      templateInputArgs {
+        title = "Input template args"
+        description = """
+          An object containing the input args to the heat template, e.g., {"foo": "12", "bar": "zoo", "baz": true}.
+        """
+        type = object
+        optional = true
+      }
+
+      templateOutputArgs {
+        title = "Output template args"
+        description = "An object containing the output args of the heat template"
+        type = object
+        output = true
+      }
+
+      templateString {
+        title = "Heat template string"
+        description = "An embedded template as a string"
+        type = string
+        optional = true
+      }
+
+      templateUrl {
+        title = "Heat template source URL"
+        description = "A URL from which the template file can be fetched"
+        type = string
+        optional = true
+      }
+
+      templateMd5 {
+        title = "MD5 checksum"
+        description = "MD5 checksum of the template, to be used when fetching the template from URL"
+        type = string
+        optional = true
+      }
+
+      templateSha1 {
+        title = "SHA-1 checksum"
+        description = "SHA-1 checksum of the template, to be used when fetching the template from URL"
+        type = string
+        optional = true
+      }
+
+    }
+  }
+}

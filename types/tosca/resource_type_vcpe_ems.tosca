@@ -1,0 +1,115 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual CPE EMS resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the vCPE EMS resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VcpeEms {
+    derivedFrom = Vnf
+    abstract = false
+    title = vCPE EMS
+    description = """
+      vCpeEms resource holding virtual CPE EMS type of VNFs.
+    """
+
+    properties {
+
+      firewallEnabled {
+        title = "Is Firewall EMS enabled on the vCpeEms?"
+        description = "Indicates if Firewall EMS is enabled on the vCpeEms or not"
+        type = boolean
+        default = true
+      }
+
+      encryptionEnabled {
+        title = "Is Encryption EMS enabled on the vCpeEms?"
+        description = "Indicates if Encryption EMS is enabled on the vCpeEms or not"
+        type = boolean
+        default = true
+      }
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the Virtual CPE EMS shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the Virtual CPE EMS VMs"
+        type = string
+      }
+
+      keyName {
+        title = "Firewall EMS SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the EMS instances"
+        type = string
+      }
+
+      deploymentLocation {
+        title = "Virtual Firewall EMS deployment location"
+        description = "Host placement directive to OpenStack for the Virtual CPE EMS instances"
+        type = string
+      }
+
+    }
+
+    groupings = [
+      {
+        title = "General",
+        description = "Please specify the general network information for your CPE",
+        properties = ["label", "description", "domainId", "properties.deploymentZone"]  // FIXME: sort out how non-properties attributes will be parsed out
+      },
+      {
+        title = "Security",
+        description = "Please specify the security options for this CPE",
+        properties = ["properties.keyName", "properties.firewallEnabled", "properties.encryptionEnabled"]
+      },
+      {
+        title = "Networking",
+        description = "Please specify the networking options for this CPE",
+        properties = ["properties.publicNet", "properties.privateNet", "properties.privateSubnet"]
+      }
+    ]
+
+    requirements {
+
+      hypervisor {
+        title = "Hypervisor"
+        description = "A vCPE is hosted on a hypervisor"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Hypervisor ]
+      }
+
+    }
+
+    capabilities {
+
+      firewall {
+        title = "Virtual Firewall EMS"
+        description = "A Virtual CPE EMS requires a Virtual Firewall EMS if enabled"
+        type = Container
+        minimum = 0
+        maximum = 1
+      }
+
+      encryption {
+        title = "Virtual Encryption"
+        description = "A Virtual CPE EMS requires a Virtual Encryption EMS if enabled"
+        type = Container
+        minimum = 0
+        maximum = 1
+      }
+
+    }
+
+  }
+}

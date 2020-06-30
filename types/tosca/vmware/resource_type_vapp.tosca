@@ -1,0 +1,260 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "vApp resource type definition"
+package     = vmware
+version     = "1.0"
+description = "This documents defines the vApp resource type."
+authors     = [ "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  vApp {
+    derivedFrom = Root
+    title = "vApp"
+    description = """
+      A collection of VMs and sometimes other vApps capable of hosting a multi-tier application.
+    """
+
+    properties {
+
+      autoDeploy {
+        type = boolean
+        default = true
+        title = "Auto Deploy"
+        description = "Deploy the vApp automatically once it has been instantiated."
+        optional = true
+      }
+
+      autoPowerOn {
+        type = boolean
+        default = true
+        title = "Auto Power On"
+        description = "Power on the vApp automatically once it has been instantiated."
+        optional = true
+      }
+
+      vms {
+        type = array
+        optional = true
+        title = "VM Configuration"
+        description = "Detailed configuration to apply to this vApp's virtual machines."
+        items {
+          type = object
+          properties {
+
+            vmName {
+              type = string
+              title = "Virtual Machine"
+              description = "The name of the vApp's virtual machine."
+            }
+
+            networkConnections {
+              type = array
+              optional = true
+              title = "Network Connections"
+              description = ""
+              items {
+
+                type = object
+
+                properties = {
+
+                  connectionIndex {
+                    type = integer
+                    title = "Connection Index"
+                    description = "Virtual slot number associated with the NIC starting from 0."
+                  }
+
+                  allocationMode {
+                    type = string
+                    title = "Allocation Mode"
+                    description = "IP Address allocation mode."
+                    enum = ["MANUAL", "POOL", "DHCP", "NONE"]
+                  }
+
+                  isConnected {
+                    type = boolean
+                    title = "Is Connected"
+                    description = "Indicates whether the NIC should be connected when the VM is deployed."
+                  }
+
+                  networkName {
+                    type = string
+                    title = "Network Name"
+                    description = "The name of the vApp network which the NIC will be connected to."
+                  }
+
+                  ipAddress {
+                    type = string
+                    optional = true
+                    title = "IP Address"
+                    description = "The IP address which will be assigned to the NIC."
+                  }
+
+                  macAddress {
+                    type = string
+                    optional = true
+                    title = "MAC Address"
+                    description = "The MAC address which will be assigned to the NIC."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      networks {
+        type = array
+        optional = true
+        title = "Network Configuration"
+        description = "Detailed configuration to apply to this vApp's networks."
+        items {
+          type = object
+          properties {
+
+            networkName {
+              type = string
+              title = "Network Name"
+              description = "The name of the vApp network."
+            }
+
+            deployed {
+              type = boolean
+              optional = true
+              title = "Is Deployed"
+              description = "Indicates if the network been deployed."
+            }
+
+            fenceMode {
+              type = string
+              enum = ["bridged", "natRouted", "isolated"]
+              title = "Fencing Mode"
+              description = "Isolation type of the network. Controls connectivity to the parent network (if specified)."
+            }
+
+            parentNetwork {
+              type = string
+              optional = true
+              title = "Parent Network"
+              description = "The id of the parent network, i.e, a resource of type vmware.resourceTypes.OrgVdcNetwork."
+            }
+
+            scopes {
+              type = array
+              title = "IP Scopes"
+              description = ""
+              items {
+                type = object
+                properties {
+
+                  inherited {
+                    type = boolean
+                    title = "Is Inherited?"
+                    description = "Indicates if the IP scope is inherited from the parent network."
+                  }
+
+                  gateway {
+                    type = string
+                    optional = true
+                    title = "Gateway"
+                    description = ""
+                  }
+
+                  netmask {
+                    type = string
+                    optional = true
+                    title = "Netmask"
+                    description = ""
+                  }
+
+                  primaryDns {
+                    type = string
+                    optional = true
+                    title = "Primary DNS Server Address"
+                    description = ""
+                  }
+
+                  secondaryDns {
+                    type = string
+                    optional = true
+                    title = "Secondary DNS Server Address"
+                    description = ""
+                  }
+
+                  dnsSuffix {
+                    type = string
+                    optional = true
+                    title = "DNS Suffix"
+                    description = ""
+                  }
+
+                  enabled {
+                    type = boolean
+                    optional = true
+                    default = true
+                    title = "Is Enabled?"
+                    description = "Indicates of the subnet is enabled."
+                  }
+
+                  ranges {
+                    type = array
+                    optional = true
+                    title = "IP ranges used for static pool allocation in the network."
+                    description = ""
+                    items {
+                      type = object
+                      properties {
+
+                        start {
+                          type = string
+                          title = "Start Address"
+                          description = "Start address of the IP range."
+                        }
+
+                        end {
+                          type = string
+                          title = "End Address"
+                          description = "End address of the IP range."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    requirements {
+
+      vdc {
+        title = "vDC"
+        description = "A vApp is hosted in a vDC."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.DataCenter ]
+      }
+
+      vms {
+        title = "Virtual Machines (VMs)"
+        description = "A vApp is composed of one of more VMs."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VirtualMachine ]
+      }
+
+      networks {
+        title = "vApp Networks"
+        description = "A vApp defines one or more vApp networks."
+        type = Container
+        resourceTypes = [ vmware.resourceTypes.vAppNetwork ]
+      }
+
+    }
+  }
+}

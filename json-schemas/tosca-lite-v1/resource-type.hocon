@@ -1,0 +1,129 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/resource-type#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Capability Type"
+
+type        = object
+
+required    = [ title, description ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type        = string
+    maxLength   = 64
+  }
+
+  description {
+    description = "Description of this resource type"
+    anyOf = [
+      { type = string},
+      { "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/ref" }
+    ]
+  }
+
+  abstract {
+    description = """
+      If true, the resource type cannot be instantiated, but only to be used as a basis
+      for deriving other resource types.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  final {
+    description = """
+      If true, no other resource type(s) can be derived from this resource type.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  derivedFrom {
+    description = "Reference to a resource type or a list of resource types from which this resource type is derived from."
+    oneOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPathArray"
+      },
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+      }
+    ]
+  }
+
+  properties {
+    description = """
+       Properties of this resource type in the form of keyword/value pairs.
+       The keywords are the property names. We recommend "camelCase" names for property names.
+       The values are the type definitions for the respective property.
+    """
+    oneOf = [
+      { "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/ref" },
+      {
+        type        = object
+        patternProperties {
+          "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+            "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+          }
+        }
+        additionalProperties = false
+      }
+    ]
+  }
+
+  capabilities {
+    type = object
+    description = """
+    Defines the capabilities provided by instances of the Resource Type.
+    """
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/capability#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  requirements {
+    type = object
+    description = """
+    Defines the requirements for instances of the Resource Type.
+    """
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/requirement#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  # TODO(tsandall) remove or add support for things below
+
+  groupings {
+    description = "Optional information indicating groupings of related fields"
+    type        = array
+    items {
+      "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property-grouping#"
+    }
+  }
+
+  resourceStates.type = object
+
+  interfaces {
+    type = object
+    description = """
+    Defines the operation interfaces for the Resource Type.
+    """
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/interfaces#"
+      }
+    }
+    additionalProperties = false
+  }
+}
+
+additionalProperties = false

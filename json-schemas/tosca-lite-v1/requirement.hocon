@@ -1,0 +1,65 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/requirement#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Requirement Definition"
+type        = object
+required    = [ type ]
+
+properties {
+
+  title {
+    type = string
+    maxLength = 64
+    description = """
+    Brief human readable title for the requirement definition used for UI labels, etc.
+    """
+  }
+
+  description {
+    type = string
+    description = """
+    Long form human readable description of the requirement definition used for UI help text, etc.
+    """
+  }
+
+  type {
+    "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    description = """
+    Specifies the Capability Type which this requirement is based on. This is the type of capability which can
+    fulfill the requirement.
+    """
+  }
+
+  resourceTypes {
+    type = array
+    items {
+      "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    }
+    description = """
+    Specifies the valid Resource Types which can fulfill the requirement.
+    """
+  }
+
+  minimum {
+    type = integer
+    minimum = 0
+    default = 1
+    description = """
+    Specifies the minimum number of times this requirement must be satisfied for resource instances with this
+    requirement definition. By default requirements must be satisfied exactly once. Zero implies an optional
+    requirement.
+    """
+  }
+
+  maximum {
+    type = integer
+    minimum = 0
+    default = 1
+    description = """
+    Specifies the minimum number of times this requirement must be satisfied for resource instances with this
+    requirement definition. By default requirements must be satisfied exactly once. Zero implies no maximum.
+    """
+  }
+
+}
+
+additionalProperties = false

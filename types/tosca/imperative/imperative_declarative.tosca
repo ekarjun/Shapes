@@ -1,0 +1,214 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A good template resource requirement"
+package     = tosca
+version     = "1.0"
+description = ""
+authors     = [ "Aashish Bagla (abagla@ciena.com)" ]
+
+resourceTypes {
+  TopLevelImperativeDeclarativeResource {
+    title = "Top level resource"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+    }
+  }
+    SubResourceImperativeDeclarative {
+      title = "Sub Resource"
+      description = "A simple type with a few properties, some of which are input others output"
+      derivedFrom = "tosca.resourceTypes.Root"
+      properties {
+        prop1 {
+          title = "Prop1"
+          description = "Property 1"
+          type = string
+          updatable = true
+        }
+      }
+    }
+}
+
+serviceTemplates {
+  SvcPureImperativeAutoClearDiff {
+    title = "Pure Imperative svc auto clear differences"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_activate.py"
+      }
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  SvcPureImperative {
+    title = "Pure Imperative svc"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_activate.py"
+      }
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  SvcEmptyDeclarative {
+    title = "Empty declarative svc"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    resources {
+    }
+    plans {
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_activate.py"
+      }
+    }
+  }
+  SvcNoImperativeActivation {
+    title = "svc no imperative activation"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  SvcOnlyImperativeTerminate {
+    title = "svc only imperative terminate"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  SvcOnlyImperativeUpdate {
+    title = "svc only imperative update"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+    }
+  }
+  SvcNoPlans {
+    title = "svc no imperative plans"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    plans {
+    }
+  }
+  SvcDeclarativeAndImperativeUpdate {
+    title = "svc with imperative update"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    resources {
+        x {
+        type = tosca.resourceTypes.SubResourceImperativeDeclarative
+        properties {
+          prop1 = { getParam = "prop1" }
+        }
+      }
+    }
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+    }
+  }
+  SvcDeclarativeAndImperativeTerminate {
+    title = "svc imperative terminate"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    resources {
+        x {
+        type = tosca.resourceTypes.SubResourceImperativeDeclarative
+        properties {
+          prop1 = { getParam = "prop1" }
+        }
+      }
+    }
+    plans {
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  SvcDeclarativeAndImperativeUpdateTerminate {
+    title = "imperative update terminate"
+    description = ""
+    implements = tosca.resourceTypes.TopLevelImperativeDeclarativeResource
+    resources {
+        x {
+        type = tosca.resourceTypes.SubResourceImperativeDeclarative
+        properties {
+          prop1 = { getParam = "prop1" }
+        }
+      }
+    }
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+}

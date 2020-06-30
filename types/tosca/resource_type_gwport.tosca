@@ -1,0 +1,44 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Gateway port resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the GatewayPort resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  PhysicalPort = tosca.resourceTypes.PhysicalPort
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  GatewayPort {
+    derivedFrom = PhysicalPort
+    title = "Gateway Port"
+    description = """
+      Gateway Port resource.
+    """
+
+    requirements {
+
+      host {
+        title = "Gateway"
+        description = "A gateway port requires a gateway"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.L2Gateway ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      eps {
+        title = "Endpoints"
+        description = "A gateway port supports endpoints"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EndPoint ]
+      }
+    }
+  }
+}

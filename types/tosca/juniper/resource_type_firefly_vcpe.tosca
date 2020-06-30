@@ -1,0 +1,278 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly Virtual CPE Service"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Firefly Virtual CPE service as a resource type"
+authors     = [
+  "Jay Hsu (jhsu@cyaninc.com)"
+]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  FireflyVcpe {
+    derivedFrom = NFVService
+    title = "Firewall Service (Firefly)"
+    description = """
+      This resource type defines a Virtual CPE service configured on a Juniper Firefly Perimeter VNF.
+    """
+
+    properties {
+
+      domainId {
+        title = "Domain ID"
+        description = "Managing Domain for the Firefly VNF"
+        type = string
+      }
+
+      // Access information
+
+      accessIp {
+        title = "Access IP Address"
+        description = "IP Address to access the Firefly VNF"
+        type = string
+        format = ipv4-address
+      }
+
+      netConfPort {
+        title = "NetConf Port"
+        description = "NetConf port to access the Firefly VNF"
+        type = integer
+        format = port-number
+        optional = true
+        default = 830
+      }
+
+      userName {
+        title = "User Name"
+        description = "User name to access the Firefly VNF"
+        type = string
+        optional = true
+        default = "root"
+      }
+
+      password {
+        title = "Password"
+        description = "Password to access the Firefly VNF"
+        type = string
+        optional = true
+        default = "Juniper"
+      }
+
+      // Interface information
+
+      interfaces {
+        title = "Interfaces"
+        description = "Logical interfaces"
+        type = array
+        items {
+          type = object
+          properties {
+            name {
+              title = "Name"
+              description = "Name of the logical interface. Need one entry each for the Firefly VNF interfaces 'ge-0/0/1.0' and 'ge-0/0/2.0' "
+              type = string
+              // format = junos-subifc-name
+            }
+            ipv4Address {
+              title = "IPv4 Address"
+              description = "IPv4 Address of the interface with prefix length (e.g. 192.168.10.1/24)"
+              type = string
+              optional = true
+              format = ipv4-interface
+            }
+            securityZone {
+              title = "Security Zone"
+              description = "Name of the security zone this interface will be put into."
+              type = string
+              enum = ["trust", "untrust"]
+            }
+          }
+        }
+      }
+
+      // Routing information (BGP TBD)
+
+      staticRouting {
+        title = "Static Routing Configuration"
+        description = "Configuration attributes for static routing"
+        optional = true
+        type = array
+        items {
+          type = object
+          properties {
+            routeDestination {
+              title = "Route Destination"
+              description = "IP route prefix (e.g., 192.168.10.0/24)"
+              type = string
+              format = ipv4-prefix
+            }
+
+            routeNextHop {
+              title = "Route Next-Hop"
+              description = "Next-Hop IP address (e.g., 192.168.10.1)"
+              type = string
+              format = ipv4-address
+            }
+          }
+        }
+      }
+
+      // Firewall information
+
+      firewall {
+
+        title = "Firewall Configuration"
+        description = "All configurations related to firewall settings"
+        optional = true
+        updatable = true
+        type = object
+        properties {
+
+          securityPolicies {
+            title = "Firewall Policies"
+            description = "Policies controlling flows across security zones"
+            type = array
+            updatable = true
+            items {
+              type = object
+              properties {
+                fromZone {
+                  title = "From Zone"
+                  description = "The zone from which the policies will be applied"
+                  type = string
+                  enum = ["trust", "untrust"]
+                }
+
+                toZone {
+                  title = "To Zone"
+                  description = "The zone from which the policies will be applied"
+                  type = string
+                  enum = ["trust", "untrust"]
+                }
+
+                service {
+                  title = "Service"
+                  description = """Service type such as "DNS", "ESP", "FTP", "GRE", "HTTP", "HTTPS""""
+                  type = string
+                  enum = [
+                    "Any",
+                    "BGP",
+                    "DNS",
+                    "FTP",
+                    "GRE",
+                    "HTTP",
+                    "HTTPS",
+                    "ICMP",
+                    "IMAP",
+                    "L2TP",
+                    "LDAP",
+                    "NTP",
+                    "NetBIOS",
+                    "OSPF",
+                    "POP3",
+                    "RADIUS",
+                    "RIP",
+                    "RTSP",
+                    "SCTP",
+                    "SMB",
+                    "SMTP",
+                    "SSH",
+                    "TCP",
+                    "TELNET",
+                    "TFTP",
+                    "UDP"
+                  ]
+                  updatable = true
+                }
+
+                protocol {
+                  title = "Custom Protocol"
+                  description = """New service protocol type such as "TCP", "UDP", "ICMP", "TCP_OR_UDP" """
+                  type = string
+                  enum = [
+                    "TCP",
+                    "UDP",
+                    "ICMP",
+                    "ESP",
+                    "AH"
+                  ]
+                  optional = true
+                  updatable = true
+                }
+
+                portType {
+                  title = "Port Dst/Src"
+                  description = "Indicates if the port range is for destination or source"
+                  type = string
+                  enum = [ "destination", "source" ]
+                  optional = true
+                  updatable = true
+                }
+
+                fromPort {
+                  title = "Port Low"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive lowest value for the port range.
+                  """
+                  type = integer
+                  format = port-number
+                  optional = true
+                  updatable = true
+                }
+
+                toPort {
+                  title = "Port High"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive highest value for the port range.
+                  """
+                  type = integer
+                  format = port-number
+                  optional = true
+                  updatable = true
+                }
+
+                sourcePrefix {
+                  title = "Src Prefix"
+                  description = "Source CIDR to which FW is applied"
+                  type = string
+                  format = ipv4-prefix
+                  optional = true
+                  updatable = true
+                }
+
+                destinationPrefix {
+                  title = "Dst Prefix"
+                  description = "Destination CIDR to which FW is applied"
+                  type = string
+                  format = ipv4-prefix
+                  optional = true
+                  updatable = true
+                }
+
+                action {
+                  title = "Action"
+                  description = """Firewall action as "allow", "deny", "reject" """
+                  type = string
+                  enum = [ "allow", "deny", "reject" ]
+                  updatable = true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    requirements {
+
+      device {
+        type = Container
+      }
+    }
+  }
+}

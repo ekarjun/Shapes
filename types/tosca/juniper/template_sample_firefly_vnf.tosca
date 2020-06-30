@@ -1,0 +1,63 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a Juniper Firefly VNF server"
+package     = juniper
+version     = "1.0"
+description = """
+Implements: FireflyVnf
+This implementation is based on a Vm and a few additional OpenStack resources.
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  FireflyVnf = juniper.resourceTypes.FireflyVnf
+  VirtualMachine = openstack.resourceTypes.VirtualMachine
+}
+
+serviceTemplates {
+
+  FireflyVnf {
+    title = Firefly Appliance (VNF)
+    description = A Firefly server deployed as a VNF connecting to existing networks
+    implements = FireflyVnf
+
+    // Inherent properties from the implemented FireflyVnf type:
+    // - flavorVmProduct
+    // - image
+    // - keyPair
+    // - securityGroup
+    // - privateNet
+    // - publicNet
+    // - ge-001-Net
+    // - ge-002-Net
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      fireflyVm {
+        type = VirtualMachine
+        product = {getParam = flavorVmProduct}
+        properties {
+           image = {getParam = image}
+           keyPair = {getParam = keyPair}
+           securityGroups = [ {getParam = securityGroup} ]
+           publicNetwork = {getParam = publicNet}
+           networks = [ {id = {getParam = privateNet}, floatingIpNetworks = [{getParam = publicNet}]},
+                        {id = {getParam = ge-001-Net}},
+                        {id = {getParam = ge-002-Net}}
+           ]
+        }
+      }
+    }
+
+    output = {
+      ge-001-IpAddr  = { extract = [ { getAttr = [ fireflyVm, addresses ] }, {join = ["", "$[?(@.networkId==", {getParam = ge-001-Net}, ")].fixedIpAddresses[0]" ]}, true ] }
+      ge-002-IpAddr  = { extract = [ { getAttr = [ fireflyVm, addresses ] }, {join = ["", "$[?(@.networkId==", {getParam = ge-002-Net}, ")].fixedIpAddresses[0]" ]}, true ] }
+      floatingIpAddr = { extract = [ { getAttr = [ fireflyVm, addresses ] }, {join = ["", "$[?(@.networkId==", {getParam = privateNet}, ")].floatingIpAddresses[0]" ]}, true ] }
+    }
+  }
+}

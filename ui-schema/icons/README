@@ -1,0 +1,2 @@
+This directory is for legacy (conductor) UI icon files. The conductor UI had been deprecated but keep this directory
+in bpocore repo in case older RAs attempt to onboard legacy UI icon files.

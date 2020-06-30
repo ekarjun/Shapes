@@ -1,0 +1,201 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "Sample template for MWC"
+package     = tidvim
+version     = "1.0"
+description = """
+A sample template to deploy Brocade vRouter 5600 VNFs into a traditional cloud environment.
+"""
+authors     = [
+  "Torin Sandall (tsandall@cyaninc.com)",
+]
+
+imports {
+   NFVService = tosca.resourceTypes.NFVService
+}
+
+resourceTypes {
+
+  MWC2015_CLOUD {
+    title = MWC 2015 Demo (Cloud)
+    description = """
+    Demonstration for Mobile World Congress configured a traditional cloud environment.
+    """
+    derivedFrom = NFVService
+
+    properties {
+
+      productA {
+        type = string
+        title = "VM Flavor A"
+        description = "Select the Brocade vRouter 5600 product for router A"
+      }
+
+      productB {
+        type = string
+        title = "VM Flavor B"
+        description = "Select the Brocade vRouter 5600 product for router B"
+      }
+
+      productC {
+        type = string
+        title = "VM Flavor C"
+        description = "Select the Brocade vRouter 5600 product for router C"
+      }
+
+      imageA {
+        type = string
+        title = "VNF Image A"
+        description = "Select the Brocade vRouter 5600 image for router A"
+      }
+
+      imageB {
+        type = string
+        title = "VNF Image B"
+        description = "Select the Brocade vRouter 5600 image for router B"
+      }
+
+      imageC {
+        type = string
+        title = "VNF Image C"
+        description = "Select the Brocade vRouter 5600 image for router C"
+      }
+
+      mgmtNet {
+        type = string
+        title = "Management Network"
+        description = "Select the management network to connect to the routers to"
+      }
+
+      genNet1 {
+        type = string
+        title = "Dataplane Network 1"
+        description = "Select a dataplane network to connect to router A (south west/xe0)"
+      }
+
+      genNet2 {
+        type = string
+        title = "Dataplane Network 2"
+        description = "Select a dataplane network to connect to router A (north west/xe1)"
+      }
+
+      genNet3 {
+        type = string
+        title = "Dataplane Network 3"
+        description = "Select a dataplane network to connect to router C (north east/xe2)"
+      }
+
+      genNet4 {
+        type = string
+        title = "Dataplane Network 4"
+        description = "Select a dataplane network to connect to router C (south east/xe3)"
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  MWC2015_CLOUD {
+    title = MWC 2015 Demo (Cloud)
+    description = """
+    Demonstration for Mobile World Congress 2015 configured for a traditional cloud environment.
+    """
+    implements = tidvim.resourceTypes.MWC2015_CLOUD
+
+    resources {
+
+      netAB {
+        title = "Connects A and B"
+        type = tidvim.resourceTypes.EthernetNetwork
+        product = {provider = {getDomain = {getParam = mgmtNet}}}
+        properties {
+          requested {
+            networkType = "bridge_data"
+            shared = false
+            adminStateUp = true
+          }
+        }
+      }
+
+      netAC {
+        title = "Connects A and C"
+        type = tidvim.resourceTypes.EthernetNetwork
+        product = {provider = {getDomain = {getParam = mgmtNet}}}
+        properties {
+          requested {
+            networkType = "bridge_data"
+            shared = false
+            adminStateUp = true
+          }
+        }
+      }
+
+      netBC {
+        title = "Connects B and C"
+        type = tidvim.resourceTypes.EthernetNetwork
+        product = {provider = {getDomain = {getParam = mgmtNet}}}
+        properties {
+          requested {
+            networkType = "bridge_data"
+            shared = false
+            adminStateUp = true
+          }
+        }
+      }
+
+      routerA {
+        type = tidvim.resourceTypes.VirtualRouterCloud
+        properties {
+          product = {getParam = productA}
+          image = {getParam = imageA}
+          mgmtNet = {getParam = mgmtNet}
+          dataNet1 = {getResourceId = netAC}
+          dataNetMac1 = "52:34:81:db:45:2e"
+          dataNet2 = {getResourceId = netAB}
+          dataNetMac2 = "52:34:81:db:45:2f"
+          genNet1 = {getParam = genNet1}
+          genNetMac1 = "52:34:81:db:45:30"
+          genNet2 = {getParam = genNet2}
+          genNetMac2 = "52:34:81:db:45:31"
+        }
+      }
+
+      routerB {
+        type = tidvim.resourceTypes.VirtualRouterCloud
+        properties {
+          product = {getParam = productB}
+          image = {getParam = imageB}
+          mgmtNet = {getParam = mgmtNet}
+          dataNet1 = {getResourceId = netAB}
+          dataNetMac1 = "52:34:81:db:45:32"
+          dataNet2 = {getResourceId = netBC}
+          dataNetMac2 = "52:34:81:db:45:33"
+          genNet1 = ""
+          genNetMac1 = "52:34:81:db:45:34"
+          genNet2 = ""
+          genNetMac2 = "52:34:81:db:45:35"
+        }
+        activateAfter = routerA
+      }
+
+      routerC {
+        type = tidvim.resourceTypes.VirtualRouterCloud
+        properties {
+          product = {getParam = productC}
+          image = {getParam = imageC}
+          mgmtNet = {getParam = mgmtNet}
+          dataNet1 = {getResourceId = netAC}
+          dataNetMac1 = "52:34:81:db:45:36"
+          dataNet2 = {getResourceId = netBC}
+          dataNetMac2 = "52:34:81:db:45:37"
+          genNet1 = {getParam = genNet3}
+          genNetMac1 = "52:34:81:db:45:38"
+          genNet2 = {getParam = genNet4}
+          genNetMac2 = "52:34:81:db:45:39"
+        }
+        activateAfter = routerB
+      }
+
+    }
+  }
+}

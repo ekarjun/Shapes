@@ -1,0 +1,46 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Physical server resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the PhysicalServer resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Server = tosca.resourceTypes.Server
+  Physical = tosca.resourceTypes.Physical
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  PhysicalServer {
+    derivedFrom = [ Server, Physical ]
+    abstract = true
+    title = "Physical Server"
+    description = """
+      Server resource with physical properties.
+    """
+
+    properties {
+
+      maxPower {
+        title       = "Max Power Consumption"
+        description = "Maximum power consumption of this server"
+        type        = integer
+        units       = Watt
+      }
+    }
+
+    requirements {
+
+      contained {
+        title = "Data Center"
+        description = "A physical server is contained in a Data Center"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.DataCenter ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

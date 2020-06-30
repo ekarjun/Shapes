@@ -1,0 +1,68 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic software component resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the SoftwareComponent resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root // we only need this so that we can use the short version below
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  SoftwareComponent {
+    derivedFrom = Root
+    title = "Software Component"
+    description = """
+      Software component resource.
+    """
+
+    properties {
+
+      name {
+        title       = "Name"
+        description = "Name of software component"
+        type        = string
+      }
+
+      description {
+        title       = "Description"
+        description = "Additional information about the software component"
+        type        = string
+        optional    = true
+      }
+
+      vendor {
+        title       = "Vendor"
+        description = "Software component vendor"
+        type        = string
+      }
+
+      version {
+        title       = "Version"
+        description = "Software component version"
+        type        = string
+      }
+
+      license {
+        title       = "License"
+        description = "Software license information"
+        type        = string
+        optional    = true
+      }
+
+    }
+
+    requirements {
+      host {
+        title = "Hosted on"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VirtualMachine ]
+        minimum = 1 // at least one is needed
+        // maximum = 1 // without this the component can be running on more than one compute node
+      }
+    }
+  }
+}

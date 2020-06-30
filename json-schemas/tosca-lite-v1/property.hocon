@@ -1,0 +1,334 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Property"
+
+definitions {
+  type {
+    anyOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#/definitions/simpleTypes"
+      }
+    ]
+  }
+
+  default {
+    description = "Optional default value for the property"
+    anyOf = [
+      { type = string }
+      { type = integer }
+      { type = number }
+      { type = boolean }
+      { type = object }
+      { type = array }
+      { type = "null" }
+    ]
+  }
+
+  enum {
+    description = "Optional enumeration of permissible values for this property"
+    type       = array
+    minItems   = 1
+    uniqueItems = true
+  }
+
+  patternMatcher {
+    description = "Optional regex pattern or array of regex patterns to restrict permissible values for this property"
+    type       = array
+    minItems   = 1
+    items {
+      type = string
+      format = regex
+    }
+  }
+
+  lengthMatcher {
+    description = "Optional array of disjoint length restrictions to apply to a string property"
+    type = array
+    minItems = 1
+    items {
+      type = string
+    }
+  }
+
+  must {
+    description = "Optional array of XPath conditions all of which if met, will allow the contained object to pass"
+    type = array
+    minItems = 1
+    items {
+      type = string
+    }
+  }
+
+  when {
+    description = "Optional XPath condition which, if true, will require a value to be defined for field"
+    type = string
+  }
+
+  positiveInteger {
+    type = integer
+    minimum = 0
+  }
+
+  positiveIntegerDefault0{
+    allOf =[
+      {"$ref" = "#/definitions/positiveInteger" }
+      { default = 0 }
+    ]
+  }
+
+}
+
+allOf       = [ {
+
+    oneOf = [
+      { required = [ type ] },
+      { required = [ propertyType ] },
+      { required = [ union ] },
+    ]
+
+  }, {
+
+    type        = object
+
+    properties {
+
+      title {
+        description = """
+        Brief human friendly title for the property.
+        Think about the label next to a field in a UI form.
+      """
+        type        = string
+        maxLength   = 64
+      }
+
+      description {
+        description = """
+        This is a more verbose description of the property.
+        Think about the content of a help box or tooltip that shows up next to the property
+        in a UI form.
+      """
+        type        = string
+      }
+
+      type {
+        anyOf = [
+          {
+            "$ref" = "#/definitions/type"
+          }
+        ]
+      }
+
+      propertyType {
+        "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict-extended.json#/definitions/propertyType"
+      }
+
+      union {
+        description = "Array of entries that form a Union typed property"
+        type        = array
+
+        items {
+          minItems = 1
+          uniqueItems = true
+          additionalItems = false
+
+          anyOf = [
+            {
+              "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property-union#"
+            }
+          ]
+        }
+      }
+
+      default {
+        anyOf = [
+          {
+            "$ref" = "#/definitions/default"
+          }
+        ]
+      }
+
+      enum {
+        anyOf = [
+          {
+            "$ref" = "#/definitions/enum"
+          }
+        ]
+      }
+
+      items {
+        anyOf = [
+          {
+            "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict-extended.json#/definitions/schemaArray"
+          },
+          {
+            "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict-extended.json#"
+          }
+        ]
+      }
+
+      output {
+        description = "Indicates that property is an output of the creation phase and not an input"
+        type        = boolean
+        default     = false
+      }
+
+      config {
+        description = "Indicates that property is a configurable property of the resource (ignored if output=true)"
+        type        = boolean
+        default     = true
+      }
+
+      updatable {
+        description = "Indicates that the property can be changed after the resource is created (ignored if config=false)"
+        type        = boolean
+        default     = false
+      }
+
+      obfuscate {
+        description = """
+        Indicates that the value of the property cannot be read back (e.g., for security/privacy reasons).
+        Ignored if config=false.
+      """
+        type        = boolean
+        default     = false
+      }
+
+      store {
+        description = "For non-config (read-only) attributes it indicates if the value is stored in the DB or not."
+        type        = boolean
+        default     = true
+      }
+
+      optional {
+        description = "Indicates if the property is optional on create (ignored if config=false)"
+        type        = boolean
+        default     = false
+      }
+
+      history {
+        description = """
+        Indicates whether the value history for this property should be preserved. If this attribute is set to false,
+        some history may still be preserved and may be visible when querying for historical values.
+        """
+        type = boolean
+        default = true
+      }
+
+      fulltext {
+        description = """
+        Indicates if the property value is fullText searchable. FullText can be enabled only on string attributes.
+        """
+        type = boolean
+        default = false
+      }
+
+      index {
+        description = """
+        Indicates if the property value is indexed in the database. The type of the value must be
+        string, number, boolean or integer.
+        """
+        type = boolean
+        default = false
+      }
+
+      minimum {
+        description = "Optional minimum value for the numeric type"
+        type        = number // FIXME type must match type of property
+      }
+
+      maximum {
+        description = "Optional maximum value for the numeric type"
+        type        = number // FIXME type must match type of property
+      }
+
+      lengthMatcher {
+        "$ref" = "#/definitions/lengthMatcher"
+      }
+
+      must {
+        "$ref" = "#/definitions/must"
+      }
+
+      when {
+        "$ref" = "#/definitions/when"
+      }
+
+      patternMatcher {
+        "$ref" = "#/definitions/patternMatcher"
+      }
+
+      presence {
+        description = "Optional string that decorates an object for compatibility with a similar type defined in YANG"
+        type = string
+      }
+
+      exclusiveMaximum {
+        description = "If set, the value of the maximum field is excluded from the admitted range"
+        type        = boolean
+        default     = false
+      }
+
+      exclusiveMinimum {
+        description = "If set, the value of the miniumum field is excluded from the admitted range"
+        type        = boolean
+        default     = false
+      }
+
+      units {
+        description = """
+        An optional string designator for a numeric type defining its units (e.g., kg, mm, MB)
+      """
+        type        = string
+      }
+
+      uiWidget {
+        type        = string
+      }
+
+      maxItems  {
+        "$ref" = "#/definitions/positiveInteger"
+      }
+
+      minItems {
+        "$ref" = "#/definitions/positiveIntegerDefault0"
+      }
+
+      uniqueItems {
+        description = "Array qualifier which (if true) ensures array items are unique"
+        type = boolean
+        default = false
+      }
+
+      properties {
+        type = object
+        additionalProperties {
+          "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict-extended.json#"
+        }
+        default = {}
+      }
+
+      additionalProperties.type = boolean
+
+      required {
+        "$ref" = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#/definitions/stringArray"
+      }
+
+      format.type = string
+
+    }
+
+    dependencies {
+      exclusiveMaximum = [ maximum ]
+      exclusiveMinimum = [ minimum ]
+      fulltext = { properties { type  { enum  = [ "string" ] } } }
+      patternMatcher = { properties { type { enum = [ "string" ] } } }
+      lengthMatcher = { properties { type { enum = [ "string" ] } } }
+      presence = { properties { type { enum = [ "object" ] } } }
+      minItems = { properties { type { enum = [ "array" ] } } }
+      maxItems = { properties { type { enum = [ "array" ] } } }
+    }
+
+    additionalProperties = false
+
+  }
+]

@@ -1,0 +1,175 @@
+"$schema" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title = "Experimental equipment resource type definition"
+package = tosca
+version = "1.0"
+description = "This document defines the base equipment type."
+authors = ["Kerry Neef (kerry.neef@cyaninc.com)"]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Equipment {
+    derivedFrom = Root
+    title = "Equipment"
+    description = """
+    An equipment resource residing in an equipment holder, e.g. a linecard.
+    """
+
+    properties {
+
+      device {
+        type = string
+        title = "Device"
+        description = "Identifies the device containing the resource."
+        optional = false
+        config = false
+      }
+
+      id {
+        type = string
+        title = "Equipment holder identifier"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      name {
+        type = string
+        title = "Interface Name"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      userLabel {
+        type = string
+        title = "User Label"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      owner {
+        type = string
+        title = "Owner"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      alarmReportingIndicator {
+        type = boolean
+        title = "Alarm Reporting Indicator"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      containingEquipmentHolder {
+        type = string
+        title = "Containing Equipment Holder"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      containedEquipmentHolders {
+        type = array
+        items.type = string
+        title = "Contained Equipment Holders"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      expectedEquipmentObjectType {
+        type = string
+        title = "Installed Equipment Object Type"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      installedEquipmentObjectType {
+        type = string
+        title = "Installed Equipment Object Type"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      installedVersion {
+        type = string
+        title = "Installed Version"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      installedSerialNumber {
+        type = string
+        title = "Holder State"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      installedPartNumber {
+        type = string
+        title = "Installed Part Number"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      supportedTps {
+        type = array
+        items.type = string
+        title = "Supported TPs"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      alarmStatus {
+        type = string
+        title = "Alarm Status"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      nativeEMSName {
+        type = string
+        title = "Native EMS Name"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      serviceState {
+        type = string
+        title = "Service State"
+        description = ""
+        optional = true
+        config = false
+      }
+    }
+
+    requirements {
+
+      contained {
+        title = "Device"
+        description = "Equipment is contained by a device."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Device ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

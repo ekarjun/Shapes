@@ -1,0 +1,93 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "vEncryption resource type"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VirtualEncryption resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VirtualEncryption {
+
+    derivedFrom = Vnf
+    title = Virtual Encryption
+    description = """
+      A Encryption appliance as a VNF
+    """
+
+    properties {
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the Encryption shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the Encryption VM"
+        type = string
+      }
+
+      privateSubnet {
+        title = "Private network subnet"
+        description = "UUID of the private subnetwork configured on the privateNet above"
+        type = string
+      }
+
+      encInNetwork {
+        title = "Network on the ingress of the Encryption"
+        description = "UUID of an existing provider / local network for the ingress traffic of Encryption"
+        type = string
+      }
+
+      encInSubnet {
+        title = "Subnetwork on the ingress of the Encryption"
+        description = "UUID of a subnet on existing provider / local network for the ingress traffic of Encryption"
+        type = string
+      }
+
+      encOutNetwork {
+        title = "Network on the egress of the Encryption "
+        description = "UUID of an existing provider network for the egress traffic of Encryption"
+        type = string
+      }
+
+      encOutSubnet {
+        title = "Subnetwork on the egress of the Encryption"
+        description = "UUID of a subnet on existing provider network for the egress traffic of Encryption"
+        type = string
+      }
+
+      keyName {
+        title = "Encryption SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the instances"
+        type = string
+      }
+
+      deploymentLocation {
+        title = "Virtual Firewall deployment location"
+        description = "Host placement directive to OpenStack for the Firewall instance"
+        type = string
+      }
+
+    }
+
+    requirements {
+
+      contained {
+        title = "Virtual CPE"
+        description = "A Virtual Encryption instance is contained in a Virtual CPE"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Vcpe ]
+        minimum = 0
+        maximum = 1
+      }
+    }
+  }
+}

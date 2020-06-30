@@ -1,0 +1,231 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Deployment",
+        "children": [{
+            "model": "properties.wanProviderId",
+            "label": "Wan domain",
+            "description": "Please select the resource Domain to host the A-End and Z-End of this P2P vCPE.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.dcProviderId",
+            "label": "Data center domain",
+            "description": "Please select the resource Domain to host the A-End and Z-End of this P2P vCPE.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.keyName",
+            "label": "Key pair",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "label",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.KeyPair"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.firewallEnabled"
+        }, {
+            "model": "properties.encryptionEnabled"
+        }]
+    }, {
+        "label": "A-End",
+        "children": [{
+            "model": "properties.aEndDeploymentLocation",
+            "label": "A-End deployment location",
+            "placeholder": "Please select a deployment location",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "properties.zone",
+                    "labelAttribute": "properties.zone",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Hypervisor"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.aEndUniNet",
+            "label": "A-End UNI network",
+            "placeholder": "Please select an A-End UNI network",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:uni",
+                        "q": "",
+                        "domainId": "${./wanProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.aEndPort",
+            "label": "A-End port",
+            "placeholder": "Please select an A-End port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "labelAttribute": "providerResourceId",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Port",
+                        "domainId": "${./wanProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.aEndVlanId"
+        }, {
+            "model": "properties.aEndBwProfile",
+            "label": "A-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }]
+    }, {
+        "label": "Z-End",
+        "children": [{
+            "model": "properties.zEndDeploymentLocation",
+            "label": "Z-End deployment location",
+            "placeholder": "Please select a deployment location",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "properties.zone",
+                    "labelAttribute": "properties.zone",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Hypervisor"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.zEndUniNet",
+            "label": "Z-End UNI network",
+            "placeholder": "Please select a Z-End UNI network",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:uni",
+                        "domainId": "${./dcProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.zEndPort",
+            "label": "Z-End port",
+            "placeholder": "Please select a Z-End port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "labelAttribute": "providerResourceId",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Port",
+                        "domainId": "${./dcProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.zEndVlanId"
+        }, {
+            "model": "properties.zEndBwProfile",
+            "label": "Z-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }]
+    }, {
+        "label": "Network",
+        "children": [{
+            "model": "properties.nniNet",
+            "label": "NNI network",
+            "placeholder": "Please select a Z-End Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:nni",
+                        "domainId": "${./dcProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.publicNet",
+            "label": "Public network",
+            "placeholder": "Please select a Z-End Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "",
+                        "q": "",
+                        "domainId": "${./dcProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.privateNet",
+            "label": "Private network",
+            "placeholder": "Please select a A-End Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./wanProviderId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.localNet",
+            "label": "Local network",
+            "placeholder": "Please select a A-End Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:inter",
+                        "domainId": "${./wanProviderId}"
+                    }
+                }
+            }
+        }]
+    }]
+}

@@ -1,0 +1,162 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "Sample template for Brocade vRouter 5600 VNF"
+package     = tidvim
+version     = "1.0"
+description = """
+A sample template to instantiate Brocade vRouter 5600 VNF in a normal cloud environment.
+"""
+authors     = [
+  "Torin Sandall (tsandall@cyaninc.com)",
+]
+
+imports {
+   Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  VirtualRouterCloud {
+    title = "Brocade vRouter 5600 (Cloud)"
+    description = """
+    The Brocade vRouter 5600 VNF configured for a traditional cloud environment.
+    """
+    derivedFrom = Vnf
+
+    properties {
+
+      product {
+        type = string
+        title = "VM flavor"
+        description = "Select the VM flavor to use."
+      }
+
+      image {
+        type = string
+        title = "Image"
+        description = "Select the Brocade vRouter image to use."
+      }
+
+      mgmtNet {
+        type = string
+        title = "Management Network"
+        description = "Select the management network to connect to the routers to"
+      }
+
+      dataNet1 {
+        type = string
+        title = "Dataplane Network 1"
+        description = "Select a dataplane network to connect to"
+      }
+
+      dataNetMac1 {
+        type = string
+        title = "dp0port1 MAC Address"
+        description = "Select a MAC address for dp0port1"
+      }
+
+      dataNet2 {
+        type = string
+        title = "Dataplane Network 2"
+        description = "Select a dataplane network to connect to"
+      }
+
+      dataNetMac2 {
+        type = string
+        title = "dp0port2 MAC Address"
+        description = "Select a MAC address for dp0port2"
+      }
+
+      genNet1 {
+        type = string
+        title = "Traffic Generator Network 1"
+        description = "Select a traffic generator network to connect to"
+      }
+
+      genNetMac1 {
+        type = string
+        title = "dp0port3 MAC Address"
+        description = "Select a MAC address for dp0port3"
+      }
+
+      genNet2 {
+        type = string
+        title = "Traffic Generator Network 2"
+        description = "Select a traffic generator network to connect to"
+      }
+
+      genNetMac2 {
+        type = string
+        title = "dp0port4 MAC Address"
+        description = "Select a MAC address for dp0port4"
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  VirtualRouterCloud {
+    title = "Brocade vRouter 5600 (Cloud)"
+    description = """
+    The Brocade vRouter 5600 VNF configured for a traditional cloud environment.
+    """
+    implements = tidvim.resourceTypes.VirtualRouterCloud
+
+    resources {
+
+      vm {
+        title = "Brocade vRouter 5600 VM"
+        type = tidvim.resourceTypes.VirtualMachine
+        product = {getParam = product}
+        properties {
+          requested {
+            ram = 12288
+            image = {getParam = image}
+            networks = [
+              {
+                uuid = {getParam = mgmtNet}
+                vpci = "0000:00:10.0"
+                bandwidth = "10 Mbps"
+                name = "mgmt0"
+              },
+              {
+                uuid = {getParam = dataNet1}
+                vpci = "0000:00:11.0"
+                name = "dp0port1"
+                mac_address = {getParam = dataNetMac1}
+              },
+              {
+                uuid = {getParam = dataNet2}
+                vpci = "0000:00:12.0"
+                name = "dp0port2"
+                mac_address = {getParam = dataNetMac2}
+              },
+              {
+                uuid = {getParam = genNet1}
+                vpci = "0000:00:13.0"
+                name = "dp0port3"
+                mac_address = {getParam = genNetMac1}
+              },
+              {
+                uuid = {getParam = genNet2}
+                vpci = "0000:00:14.0"
+                name = "dp0port4"
+                mac_address = {getParam = genNetMac2}
+              },
+            ]
+            extended {
+              processorRanking = 200
+              numas = [
+                {
+                  pairedThreads = 9
+                  pairedThreadsId = [[0, 9], [1, 10], [2, 11], [3, 12], [4, 13], [5, 14], [6, 15], [7, 16], [8, 17]]
+                }
+              ]
+            }
+          }
+        }
+      }
+
+    }
+  }
+}

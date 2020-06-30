@@ -1,0 +1,43 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic image resource type definition"
+package     = tidvim
+version     = "1.0"
+description = "This document defines the Image resource type."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root // we only need this so that we can use the short version below
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Image {
+    derivedFrom = Root
+    title = "Image"
+    description = """
+      Image resource.
+    """
+
+    properties {
+
+      path {
+        title = "Path"
+        description = "Path where iso/qcow2 image is present"
+        type = string
+      }
+
+    }
+
+    capabilities {
+
+      operates {
+        title = "Servers"
+        description = "An image operates a Server"
+        type = Container
+        resourceTypes = [ tidvim.resourceTypes.Server ]
+      }
+    }
+
+  }
+}

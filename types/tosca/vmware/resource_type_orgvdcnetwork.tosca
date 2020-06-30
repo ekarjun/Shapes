@@ -1,0 +1,36 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Organization vDC Network resource type definition"
+package     = vmware
+version     = "1.0"
+description = "This documents defines the Organization vDC network resource type."
+authors     = [ "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  EthernetNetwork = tosca.resourceTypes.EthernetNetwork
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  OrgVdcNetwork {
+    derivedFrom = EthernetNetwork
+    title = "Organization vDC Network"
+    description = """
+      Allows virtual machines within the vDC to communicate amongst themselves as well as with other Organization vDC and external networks.
+    """
+
+    properties {
+
+    }
+
+    capabilities {
+      host {
+        title = "vApp Networks"
+        description = "An Organization VDC Network hosts vApp networks"
+        type = Container
+        resourceTypes = [ vmware.resourceTypes.vAppNetwork ]
+      }
+    }
+
+  }
+}

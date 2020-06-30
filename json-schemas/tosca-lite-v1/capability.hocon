@@ -1,0 +1,63 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/capability#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Capability Definition"
+type        = object
+required    = [ type ]
+
+properties {
+
+  title {
+    type = string
+    maxLength = 64
+    description = """
+    Brief human readable title for the capability definition used for UI labels, etc.
+    """
+  }
+
+  description {
+    type = string
+    description = """
+    Long form human readable description of the capability definition used for UI help text, etc.
+    """
+  }
+
+  type {
+    "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    description = """
+    Specifies the ID of the Capability Type which this capability definition is based on.
+    """
+  }
+
+  resourceTypes {
+    type = array
+    items {
+      "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    }
+    description = """
+    Specifies the valid Resource Types which are supported as sources of a relationship established against this
+    capability.
+    """
+  }
+
+  minimum {
+    type = integer
+    minimum = 0
+    default = 0
+    description = """
+    Specifies the minimum number of times this capability may be provided by a resource instance. By default the
+    capability may be provided zero times. E.g, a load balancer may deployed without providing the capability for any
+    applications.
+    """
+  }
+
+  maximum {
+    type = integer
+    description = """
+    Specifies the maximum number of times this capability may be provided by a resource instance. By default this is
+    unbounded.
+    """
+  }
+
+}
+
+additionalProperties = false

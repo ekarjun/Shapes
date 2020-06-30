@@ -1,0 +1,92 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a Juniper Firefly vCPE VNF server"
+package     = juniper
+version     = "1.0"
+description = """
+Implements: FireflyVcpeVnf
+This implementation is based on a VM and a few additional OpenStack resources.
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  FireflyVcpe = juniper.resourceTypes.FireflyVcpe
+  FireflyVnf = juniper.resourceTypes.FireflyVnf
+  Network = tosca.resourceTypes.EthernetNetwork
+  Subnet = tosca.resourceTypes.Subnet
+}
+
+serviceTemplates {
+
+  FireflyVcpeVnf {
+    title = Virtual Firewall (Firefly)
+    description = A Firefly vCPE server deployed as a VNF connecting to existing networks
+    implements = juniper.resourceTypes.FireflyVcpeVnf
+
+    // Inherent properties from the implemented FireflyVcpeVnf type:
+    // - flavorVmProduct
+    // - image
+    // - keyPair
+    // - securityGroup
+    // - privateNet
+    // - publicNet
+    // - ge-001-Net
+    // - ge-002-Net
+    //
+    // - domainId
+    // - accessIp
+    // - interfaces.ipv4Address
+    // - interfaces.securityZone
+    // - staticRouting.routeDestination
+    // - staticRouting.routeNextHop
+    // - firewall.securityPolicies.fromZone
+    // - firewall.securityPolicies.toZone
+    // - firewall.securityPolicies.service
+    // - firewall.securityPolicies.protocol
+    // - firewall.securityPolicies.portType
+    // - firewall.securityPolicies.fromPort
+    // - firewall.securityPolicies.toPort
+    // - firewall.securityPolicies.sourcePrefix
+    // - firewall.securityPolicies.destinationPrefix
+    // - firewall.securityPolicies.action
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      vnf {
+        type = FireflyVnf
+        properties {
+           flavorVmProduct = {getParam = flavorVmProduct}
+           image = {getParam = image}
+           keyPair = {getParam = keyPair}
+           securityGroup = {getParam = securityGroup}
+           privateNet = {getParam = privateNet}
+           publicNet = {getParam = publicNet}
+           ge-001-Net = {getParam = ge-001-Net}
+           ge-002-Net = {getParam = ge-002-Net}
+        }
+      }
+
+      vcpe {
+        type = FireflyVcpe
+        properties {
+           domainId = {getParam = domainId}
+           accessIp = {getAttr = [vnf, floatingIpAddr]}
+           interfaces = [ {name = "ge-0/0/1.0",
+                           ipv4Address = {join = ["", {getAttr = [vnf, ge-001-IpAddr]}, "/24"]},
+                           securityZone = "trust"},
+                          {name = "ge-0/0/2.0",
+                           ipv4Address = {join = ["", {getAttr = [vnf, ge-002-IpAddr]}, "/24"]},
+                           securityZone = "untrust"}
+           ]
+           staticRouting = {getParam = staticRouting}
+           firewall = {getParam = firewall}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Config",
+        "children": [{
+            "model": "properties.remoteAccess",
+            "label": "Remote access URL"
+        }, {
+            "model": "properties.l2GatewayType",
+            "label": "L2 gateway type",
+            "renderer": {
+                "name": "select"
+            }
+        }]
+    }, {
+        "label": "Credentials",
+        "children": [{
+            "model": "properties.adminUsername",
+            "label": "Admin password"
+        }, {
+            "model": "properties.adminPassword",
+            "label": "Admin username"
+        }]
+    }]
+}

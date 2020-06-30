@@ -1,0 +1,60 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "A-End",
+        "children": [{
+            "model": "properties.aEndBwProfile",
+            "label": "A-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }, {
+            "model": "properties.aEndPort",
+            "label": "A-End port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.UniPort"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.aEndVlanId"
+        }]
+    }, {
+        "label": "Z-End",
+        "children": [{
+            "model": "properties.zEndBwProfile",
+            "label": "Z-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }, {
+            "model": "properties.zEndPort",
+            "label": "Z-End port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.UniPort"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.zEndVlanId"
+        }]
+    }]
+}

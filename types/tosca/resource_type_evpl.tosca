@@ -1,0 +1,101 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "EVPL resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Evpl resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Link = tosca.resourceTypes.Link
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Evpl {
+    derivedFrom = Link
+    title = "Ethernet Virtual Private Line"
+    description = """
+      Ethernet Virtual Private Line resource.
+    """
+
+    properties {
+
+      aEndPort {
+        title = "A-End Port"
+        description = "Unique ID of A-end UNI port"
+        type = string
+      }
+
+      aEndVlanId {
+        title = "A-End VLAN Tag"
+        description = "A-end VLAN tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+      aEndBwProfile {
+        title = "A-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of A-End"
+        type = string
+        optional = true
+        updatable = true
+      }
+
+      zEndPort {
+        title = "Z-End Port"
+        description = "Unique ID of Z-end UNI port"
+        type = string
+      }
+
+      zEndVlanId {
+        title = "Z-End VLAN Tag"
+        description = "Z-end VLAN tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+      zEndBwProfile {
+        title = "Z-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of Z-End"
+        type = string
+        optional = true
+        updatable = true
+      }
+
+    }
+
+    requirements {
+
+      epA {
+        title = "EVPL A-end"
+        description = "An EVPL requires an A-end endpoint"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EvplEndPoint ]
+        minimum = 1
+        maximum = 1
+      }
+
+      epZ {
+        title = "EVPL Z-end"
+        description = "An EVPL requires a Z-end endpoint"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EvplEndPoint ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      connectivity {
+        title = "Network Services"
+        description = "An EVPL provides WAN connectivity for Network Services"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.NetworkService ]
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet Network resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Ethernet Network resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Network = tosca.resourceTypes.Network
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  EthernetNetwork {
+    derivedFrom = Network
+    title = "Ethernet Network"
+    description = """
+      An Ethernet network.
+    """
+
+    properties {
+
+      external {
+        title  = "Is this an external network?"
+        description = "An external network from a cloud provider perspective"
+        type = boolean
+        default = false
+      }
+
+      networkType {
+        title = "Network type"
+        description = "Specifies the physical mechanism by which the virtual network is realized"
+        type = string
+        enum = [ "flat", "local", "vlan", "gre", "vxlan" ]
+        optional = true
+      }
+
+      physicalNetwork {
+        title = "Physical network"
+        description = """
+          Specifies the name of the physical network over which the virtual network is realized
+          for flat and VLAN networks.
+        """
+        type = string
+        optional = true
+      }
+
+      segmentationId {
+        title = "Segmentation ID"
+        description = "Specifies the VLAN ID on the physical network that realizes the virtual network for VLAN networks"
+        type = integer
+        optional = true
+      }
+
+    }
+
+    requirements {
+
+      contained {
+        title = "Data Center"
+        description = "An Ethernet network is contained in a Data Center"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.DataCenter ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      subnets {
+        title = "Subnets"
+        description = "An Ethernet Network hosts subnets"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Subnet ]
+      }
+
+      ports {
+        title = "Ethernet Ports"
+        description = "An Ethernet Network hosts Ethernet ports"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EthernetPort ]
+      }
+
+      connectivity {
+        title = "Connectivity Service"
+        description = "An Ethernet Network provides connectivity"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.NetworkService,
+                           tosca.resourceTypes.L2Vpn ]
+      }
+    }
+  }
+}

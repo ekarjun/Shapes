@@ -1,0 +1,27 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Service Facade resource type definition"
+package     = vss
+version     = "1.0"
+description = "This document defines the abstract network service facade resource."
+authors     = [ "Gordon Bolt (gbolt@blueplanet.com)" ]
+
+imports {
+    Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+    NetworkServiceFacade {
+        abstract = true
+        derivedFrom = Root
+        title = "Network Service Facade"
+        description = """
+            A Network Service Facade is a wrapper around a network service used to
+            expose the properties necessary to instantiate the wrapped network service. The network service's detailed
+            requirements are hidden behind the facade and translated in the facade's implementation. This base
+            NetworkServiceFacade serves as an abstract superclass from which concrete network service facades should derive.
+        """
+
+        properties {
+        }
+    }
+}

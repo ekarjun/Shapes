@@ -1,0 +1,48 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/property-union#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Property Unions"
+
+type        = object
+
+required    = [ type ]
+
+properties {
+  type {
+    description = "Type for the union member. Only primitives are allowed."
+    type = string
+    enum = [ "boolean", "integer", "null", "number", "string" ]
+  }
+
+  format {
+    description = "Format for the union member."
+    type = string
+    format = regex
+  }
+
+  enum {
+    description = "List of enumeration values possible for the union member."
+    anyOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#/definitions/enum"
+      }
+    ]
+  }
+
+  patternMatcher {
+    description = "List of pattern matchers which are possible for the union member."
+    anyOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#/definitions/patternMatcher"
+      }
+    ]
+  }
+
+  lengthMatcher {
+    description = "List of pattern matchers which are possible for the union member."
+    anyOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#/definitions/lengthMatcher"
+      }
+    ]
+  }
+}

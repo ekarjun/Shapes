@@ -1,0 +1,129 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Mobility Zone resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the MZone resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Mzone {
+
+    derivedFrom = NFVService
+    title = MZone
+    description = """
+      DNS and vEPC resource holding virtual EPC type of VNFs.
+    """
+
+    properties {
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the vEPC VNFs shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the vEPC VNF VMs"
+        type = string
+      }
+
+      utranNet {
+        title = "UTRAN network"
+        description = "UUID of a subnet on existing internal network which can be accessed by UTRAN S1 interface"
+        type = string
+      }
+
+      keyName {
+        title = "Encryption SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the VNF instances of the vEPC"
+        type = string
+      }
+
+      templateUrlDir {
+        title = "HTTP file server URL"
+        description = "Nested stack template directory reachable by URL"
+        type = string
+      }
+
+      externalDnsServer {
+        title = "External DNS IP Address"
+        description = "IP address of an existing DNS server to enable recursive DNS look-up"
+        type = string
+        default = ""
+      }
+
+      domain {
+        title       = "Domain name"
+        description = "First domain name, e.h., example.com"
+        type        = string
+        default     = ""
+      }
+
+      records {
+        title       = "Domain records"
+        description = "Comma-separated list of A records in the format <name>:<content>. E.g., 'example.com:1.1.1.1,host1.example.com:2.2.2.2'"
+        type        = string
+        default     = ""
+      }
+
+      aEndPort {
+        title = "A-End Port"
+        description = "Unique ID of A-end UNI port"
+        type = string
+      }
+
+      aEndBwProfile {
+        title = "A-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of A-End"
+        type = string
+      }
+
+      zEndPort {
+        title = "Z-End Port"
+        description = "Unique ID of Z-end UNI port"
+        type = string
+      }
+
+      zEndBwProfile {
+        title = "Z-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of Z-End"
+        // pattern = ...
+        type = string
+      }
+
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+      vepc {
+        title = "vEPC"
+        description = "Virtual EPC"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Vepc ]
+        minimum = 1
+        maximum = 1
+      }
+
+      dns {
+        title = "DNS"
+        description = "Virtual DNS"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VirtualDns ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+}

@@ -1,0 +1,51 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Config",
+        "children": [{
+            "model": "properties.network",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.prefix"
+        }, {
+            "model": "properties.dhcpEnabled"
+        }, {
+            "model": "properties.ipVersion"
+        }, {
+            "model": "properties.gatewayAddress"
+        }, {
+            "model": "properties.allocationPools",
+            "arrayOptions": {
+                "autoAdd": true,
+                "compact": true,
+                "showLabel": false,
+                "sortable": true,
+                "itemCell": {
+                    "children": [{
+                        "model": "end"
+                    }, {
+                        "model": "start"
+                    }]
+                }
+            }
+        }]
+    }]
+}

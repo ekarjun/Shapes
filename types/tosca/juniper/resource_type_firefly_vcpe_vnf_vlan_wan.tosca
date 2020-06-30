@@ -1,0 +1,58 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly vCPE VNF VLAN / WAN resource type definition"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Firefly vCPE VNF resource type connected to VLAN / WAN networks."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  FireflyVcpeVnfVlan = juniper.resourceTypes.FireflyVcpeVnfVlan
+}
+
+resourceTypes {
+
+  FireflyVcpeVnfVlanWan {
+    derivedFrom = FireflyVcpeVnfVlan
+    title = Virtual Firewall (FF) w/ WAN
+    description = """
+      Firefly resource holding Juniper Firefly type of vCPE VNF connected to VLAN / WAN networks.
+    """
+
+    properties {
+
+      aEndPort {
+        title = "A-End Port"
+        description = "Unique ID of A-end UNI port"
+        type = string
+      }
+
+      bwProfile {
+        title = "Bandwidth Profile"
+        description = "Ingress bandwidth profile of EVPL"
+        type = string
+      }
+
+      wanProviderId {
+        title = "WAN Provider"
+        description = "Domain providing WAN support"
+        type = string
+        optional = true
+      }
+
+      zEndPort {
+        title = "Z-End Port"
+        description = "Unique ID of Z-end UNI port"
+        type = string
+      }
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+    }
+
+  }
+}

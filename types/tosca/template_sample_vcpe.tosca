@@ -1,0 +1,522 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for vCPE capable to do Firewall and/or Encryption"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: VcpeFirewallEms
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyainc.com)",
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Darren Dowker (darren.dowker@cyaninc.com)"
+]
+
+imports {
+  HeatStack = tosca.resourceTypes.HeatStack
+  Root = tosca.serviceTemplates.Root
+  Vcpe = tosca.resourceTypes.Vcpe
+}
+
+serviceTemplates {
+
+  Vcpe {
+    title = vCPE
+    description = vCPE implemented as a heat stacks
+    implements = Vcpe
+
+    // Inherent properties from the implemented VirtualDns type:
+    // - firewallEnabled
+    // - encryptionEnabled
+    // - uniNet
+    // - nniNet
+    // - localNet
+    // - publicNet
+    // - privateNet
+    // - keyName
+    // - deploymentLocation
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      search {
+        title = "Find derived values"
+        type = tosca.resourceTypes.CatalogSearch
+        properties {
+          input {
+            privateNet {getParam = privateNet}
+            localNet {getParam = localNet}
+            uniNet {getParam = uniNet}
+            nniNet {getParam = nniNet}
+          }
+          toFind = [privateSubnet, localSubnet, uniSubnet, nniSubnet]
+          query = """
+            (subnetOf ?privateSubnet ?privateNet)
+            (subnetOf ?uniSubnet ?uniNet)
+            (subnetOf ?nniSubnet ?nniNet)
+            (subnetOf ?localSubnet ?localNet)
+          """
+        }
+      }
+
+      firewall {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        createIf = {getParam = firewallEnabled}
+        properties {
+          templateInputArgs = {
+            ExternalNetwork = {getProviderResourceId {getParam = publicNet}}
+            InternalNetwork = {getProviderResourceId {getParam = privateNet}}
+            Subnet = {getProviderResourceId {getAttr = [search, output.privateSubnet]}}
+            CpeVNFs = {ifElse = [ {getParam = encryptionEnabled}, "FW_ENCRYPT", "FW" ]}
+            InNetwork = {getProviderResourceId {getParam = uniNet}}
+            InSubnet = {getProviderResourceId {getAttr = [search, output.uniSubnet]}}
+            OutNetwork = {ifElse = [ {getParam = encryptionEnabled}, {getProviderResourceId {getParam = localNet}}, {getProviderResourceId {getParam = nniNet}}]}
+            OutSubnet = {ifElse = [ {getParam = encryptionEnabled}, {getProviderResourceId {getAttr = [search, output.localSubnet]}}, {getProviderResourceId {getAttr = [search, output.nniSubnet]}}]}
+            KeyName = {getParam = keyName}
+            DeploymentLocation = {getParam = deploymentLocation}
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "This template deploys a single-instance of FortiGateVM",
+
+  "Parameters" : {
+
+    "ExternalNetwork" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "InternalNetwork" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "Subnet" : {
+      "Description" : "UUID of a subnet on existing internal network",
+      "Type" : "String"
+    },
+
+    "CpeVNFs" : {
+      "Description" : "VNF instances included in vCPE",
+      "Type" : "String",
+      "AllowedValues" : [ "FW", "FW_ENCRYPT" ]
+    },
+
+    "InNetwork" : {
+      "Description" : "UUID of an existing internal network for the ingress traffic of FW",
+      "Type" : "String"
+    },
+
+    "InSubnet" : {
+      "Description" : "UUID of a subnet on existing internal network for the ingress traffic of FW",
+      "Type" : "String"
+    },
+
+    "OutNetwork" : {
+      "Description" : "UUID of an existing internal network for the egress traffic of FW",
+      "Type" : "String"
+    },
+
+    "OutSubnet" : {
+      "Description" : "UUID of a subnet on existing internal network for the egress traffic of FW",
+      "Type" : "String"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an existing KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+
+    "DeploymentLocation" : {
+      "Description" : "Host placement directive to OpenStack for firewall",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "forti.small",
+      "AllowedValues" : [ "m1.small", "m1.medium", "m1.large", "m1.xlarge", "c1.xlarge", "forti.small" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    }
+  },
+
+  "Mappings" : {
+    "CpeInstanceMap": {
+      "CpeLocation" : { "Milwaukee-Branch" : "1", "Chicago-HQ" : "2", "SP-NOC" : "1" }
+    },
+    "VmSnapshotImageMap": {
+      "FW_ENCRYPT" : { "1" : "vcpe1-FW5.07-10.0.0.21-full-cpe", "2" : "vcpe2-FW5.07-10.0.0.22-full-cpe" },
+      "FW"         : { "1" : "vcpe1-FW5.07-10.0.0.21-fw-only", "2" : "vcpe2-FW5.07-10.0.0.22-fw-only" }
+    },
+    "HostIpAddrMap": {
+      "FW-HostIpAddr" : { "1" : "10.0.0.21", "2" : "10.0.0.22" }
+    },
+    "InHostIpAddrMap": {
+      "FW_ENCRYPT" : { "1" : "192.168.11.2",   "2" : "192.168.21.2" },
+      "FW"         : { "1" : "192.168.12.2",   "2" : "192.168.22.2" }
+    },
+    "OutHostIpAddrMap": {
+      "FW_ENCRYPT" : { "1" : "192.168.140.10", "2" : "192.168.140.20" },
+      "FW"         : { "1" : "192.168.32.1",   "2" : "192.168.32.2" }
+    }
+  },
+
+  "Resources" : {
+
+    "sg" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable access to all TCP / UDP ports plus ICMP",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "1", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "1", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "services" : {
+              "sysvinit" : {
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId"    : { "Fn::FindInMap" : [ "VmSnapshotImageMap", { "Ref" : "CpeVNFs" },
+                           { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] },
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "AvailabilityZone" : { "Ref" : "DeploymentLocation" },
+        "NetworkInterfaces": [ { "Ref": "port_floating" }, { "Ref": "port_in" }, { "Ref": "port_out" } ]
+      }
+    },
+
+    "port_in": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InNetwork" },
+ 	"security_groups": [ { "Ref" : "sg" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "InSubnet" },
+          "ip_address": { "Fn::FindInMap" : [ "InHostIpAddrMap", { "Ref" : "CpeVNFs" },
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "port_out": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "OutNetwork" },
+ 	"security_groups": [ { "Ref" : "sg" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "OutSubnet" },
+          "ip_address": { "Fn::FindInMap" : [ "OutHostIpAddrMap", { "Ref" : "CpeVNFs" },
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "port_floating": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InternalNetwork" },
+ 	"security_groups": [ { "Ref" : "sg" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "Subnet" },
+          "ip_address": { "Fn::FindInMap" : [ "HostIpAddrMap", "FW-HostIpAddr",
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "fip": {
+      "Type": "OS::Neutron::FloatingIP",
+      "Properties": {
+        "floating_network_id": { "Ref" : "ExternalNetwork" }
+      }
+    },
+
+    "fip_assoc": {
+      "Type": "OS::Neutron::FloatingIPAssociation",
+      "Properties": {
+        "floatingip_id": { "Ref" : "fip" },
+        "port_id": { "Ref" : "port_floating" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "UniPortIP" : {
+      "Value" : { "Fn::GetAtt" : [ "port_in", "fixed_ips" ] },
+      "Description" : "Firewall UNI port IP address"
+    },
+
+    "NniPortIP" : {
+      "Value" : { "Fn::GetAtt" : [ "port_out", "fixed_ips" ] },
+      "Description" : "Firewall NNI port IP address"
+    },
+
+    "SSHAccess" : {
+      "Value" : { "Fn::Join" : ["", ["ssh admin@", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}]] },
+      "Description" : "SSH access to Firewall server"
+    },
+
+    "EMSAccess" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}, "/" ]] },
+      "Description" : "Web EMS access to Firewall server"
+    }
+
+  }
+}
+"""
+        }
+      }
+
+      encryption {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        createIf = {getParam = encryptionEnabled}
+        properties {
+          templateInputArgs = {
+            ExternalNetwork = {getProviderResourceId {getParam = publicNet}}
+            InternalNetwork = {getProviderResourceId {getParam = privateNet}}
+            Subnet = {getProviderResourceId {getAttr = [search, output.privateSubnet]}}
+            CpeVNFs = {ifElse = [ {getParam = firewallEnabled}, "FW_ENCRYPT", "ENCRYPT" ]}
+            InNetwork = {ifElse = [ {getParam = firewallEnabled}, {getProviderResourceId {getParam = localNet}}, {getProviderResourceId {getParam = uniNet}}]}
+            InSubnet = {ifElse = [ {getParam = firewallEnabled}, {getProviderResourceId {getAttr = [search, output.localSubnet]}}, {getProviderResourceId {getAttr = [search, output.uniSubnet]}}]}
+            OutNetwork = {getProviderResourceId {getParam = nniNet}}
+            OutSubnet = {getProviderResourceId {getAttr = [search, output.nniSubnet]}}
+            KeyName = {getParam = keyName}
+            DeploymentLocation = {getParam = deploymentLocation}
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "This template deploys a single-instance of vCEP VM",
+
+  "Parameters" : {
+
+    "ExternalNetwork" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "InternalNetwork" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "Subnet" : {
+      "Description" : "UUID of a subnet on existing internal network",
+      "Type" : "String"
+    },
+
+    "CpeVNFs" : {
+      "Description" : "VNF instances included in vCPE",
+      "Type" : "String",
+      "AllowedValues" : [ "ENCRYPT", "FW_ENCRYPT" ]
+    },
+
+    "InNetwork" : {
+      "Description" : "UUID of an existing internal network for the ingress traffic of Encryption",
+      "Type" : "String"
+    },
+
+    "InSubnet" : {
+      "Description" : "UUID of a subnet on existing internal network for the ingress traffic of Encryption",
+      "Type" : "String"
+    },
+
+    "OutNetwork" : {
+      "Description" : "UUID of an existing internal network for the egress traffic of Encryption",
+      "Type" : "String"
+    },
+
+    "OutSubnet" : {
+      "Description" : "UUID of a subnet on existing internal network for the egress traffic of Encryption",
+      "Type" : "String"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "DeploymentLocation" : {
+      "Description" : "Host placement directive to OpenStack for traffic encryption",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.small", "m1.medium", "m1.large", "m1.xlarge", "c1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    }
+  },
+
+  "Mappings" : {
+    "CpeInstanceMap": {
+      "CpeLocation" : { "Milwaukee-Branch" : "1", "Chicago-HQ" : "2", "SP-NOC" : "1" }
+    },
+    "VmSnapshotImageMap": {
+      "ENCRYPT-Image" : { "1" : "vCEP-4.0.1-VM", "2" : "vCEP-4.0.1-VM" }
+    },
+    "HostIpAddrMap": {
+      "ENCRYPT-HostIpAddr" : { "1" : "10.0.0.31", "2" : "10.0.0.32" }
+    },
+    "InHostIpAddrMap": {
+      "FW_ENCRYPT" : { "1" : "192.168.140.11", "2" : "192.168.140.21" },
+      "ENCRYPT"    : { "1" : "192.168.13.2",   "2" : "192.168.23.2"   }
+    },
+    "OutHostIpAddrMap": {
+      "FW_ENCRYPT" : { "1" : "192.168.31.1",  "2" : "192.168.31.2" },
+      "ENCRYPT"    : { "1" : "192.168.33.1",  "2" : "192.168.33.2" }
+    }
+  },
+
+  "Resources" : {
+
+    "sg" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable access to all TCP / UDP ports plus ICMP",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "1", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "1", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "vcepaccess" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable access to all TCP / UDP ports plus ICMP",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "8443", "ToPort" : "8443", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "123", "ToPort" : "123", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "161", "ToPort" : "161", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "500", "ToPort" : "500", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "services" : {
+              "sysvinit" : {
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId"    : { "Fn::FindInMap" : [ "VmSnapshotImageMap", "ENCRYPT-Image",
+                           { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] },
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "AvailabilityZone" : { "Ref" : "DeploymentLocation" },
+        "NetworkInterfaces": [ { "Ref": "port_out" }, { "Ref": "port_in" }, { "Ref": "port_floating" } ]
+      }
+    },
+
+    "port_out": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "OutNetwork" },
+ 	"security_groups": [ { "Ref" : "sg" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "OutSubnet" },
+          "ip_address": { "Fn::FindInMap" : [ "OutHostIpAddrMap", { "Ref" : "CpeVNFs" },
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "port_in": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InNetwork" },
+ 	"security_groups": [ { "Ref" : "sg" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "InSubnet" },
+          "ip_address": { "Fn::FindInMap" : [ "InHostIpAddrMap", { "Ref" : "CpeVNFs" },
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "port_floating": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InternalNetwork" },
+ 	"security_groups": [ { "Ref" : "vcepaccess" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "Subnet" },
+          "ip_address": { "Fn::FindInMap" : [ "HostIpAddrMap", "ENCRYPT-HostIpAddr",
+                            { "Fn::FindInMap" : [ "CpeInstanceMap", "CpeLocation", { "Ref" : "DeploymentLocation" } ] } ] }
+        }]
+      }
+    },
+
+    "fip": {
+      "Type": "OS::Neutron::FloatingIP",
+      "Properties": {
+        "floating_network_id": { "Ref" : "ExternalNetwork" }
+      }
+    },
+
+    "fip_assoc": {
+      "Type": "OS::Neutron::FloatingIPAssociation",
+      "Properties": {
+        "floatingip_id": { "Ref" : "fip" },
+        "port_id": { "Ref" : "port_floating" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "SSHAccess" : {
+      "Value" : { "Fn::Join" : ["", ["ssh admin@", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}]] },
+      "Description" : "SSH access to Encryption server"
+    }
+  }
+
+}
+"""
+        }
+      }
+
+    }
+  }
+}

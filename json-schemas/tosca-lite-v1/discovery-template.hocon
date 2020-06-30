@@ -1,0 +1,93 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/discovery-template#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Discovery Template"
+
+type        = object
+
+required    = [ title, description, implements ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type        = string
+    maxLength   = 32
+  }
+
+  description {
+    description = "Description of this discovered resource type"
+    anyOf = [
+      { type = string},
+      { "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/ref" }
+    ]
+  }
+
+  abstract {
+    description = """
+      If true, the resource type cannot be instantiated, but only to be used as a basis
+      for deriving other resource types.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  final {
+    description = """
+      If true, no other resource type(s) can be derived from this resource type.
+    """
+    type        = boolean
+    default     = false
+  }
+
+  derivedFrom {
+    description = "Reference to a template from which this template is derived from."
+    type        = [
+      string, // FIXME use a more specific type
+      array
+    ]
+  }
+
+  implements {
+    description = "Reference to a resource type that this template implements"
+    type = string
+  }
+
+  resourceLocators {
+    description = """
+        Resource locators for this service. These locators will be used to populate resource properties and
+        will be managed by this service.
+    """
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+      "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-locator#"
+     }
+    }
+    additionalProperties = false
+  }
+
+  parentLocator {
+    description = """
+        Parent locators for this resource. if resource can not be located, it will create a resource of this type .
+    """
+    "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/parent-locator#"
+    additionalProperties = false
+  }
+
+  properties.type = object
+
+  requiredLocators = {
+    description = """
+        Minimum set of locators that should be available in the system before the service can be promoted to managed.
+     """
+    type = array
+    items = { type = string }
+
+  }
+
+}
+
+additionalProperties = false

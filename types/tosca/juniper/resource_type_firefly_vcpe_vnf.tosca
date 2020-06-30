@@ -1,0 +1,75 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly vCPE VNF resource type definition"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Firefly vCPE VNF resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  FireflyVcpe = juniper.resourceTypes.FireflyVcpe
+  FireflyVnf  = juniper.resourceTypes.FireflyVnf
+}
+
+resourceTypes {
+
+  FireflyVcpeVnf {
+    derivedFrom = [ FireflyVcpe, FireflyVnf ]
+    title = Virtual Firewall (Firefly)
+    description = """
+      Firefly resource holding Juniper Firefly type of vCPE VNF using existing networks.
+    """
+
+    properties {
+
+      // Management interface IP address -- override it as optional
+      accessIp {
+        title = "Access IP Address"
+        description = "IP Address to access the Firefly VNF"
+        type = string
+        format = ipv4-address
+        optional = true
+      }
+
+      // Interface information -- override it as optional
+      interfaces {
+        title = "Interfaces"
+        description = "Logical interfaces"
+        optional = true
+        type = array
+        items {
+          type = object
+          properties {
+            name {
+              title = "Name"
+              description = "Name of the logical interface. Need to follow the convention of 'ge-0/0/n.0' where n is the nth network the Firefly VM connects to"
+              type = string
+              // format = junos-subifc-name
+            }
+            ipv4Address {
+              title = "IPv4 Address"
+              description = "IPv4 Address of the interface with prefix length (e.g. 192.168.10.1/24)"
+              type = string
+              optional = true
+            }
+            securityZone {
+              title = "Security Zone"
+              description = "Name of the security zone this interface will be put into."
+              type = string
+              enum = ["trust", "untrust", "dmz"]
+            }
+          }
+        }
+      }
+
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+    }
+
+  }
+}

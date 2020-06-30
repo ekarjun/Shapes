@@ -1,0 +1,44 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly vCPE"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Virtual CPE as a service template"
+authors     = [
+  "Jay Hsu (jhsu@cyaninc.com)"
+]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+}
+
+serviceTemplates {
+
+  FireflyVcpe {
+
+    title = "Firewall Service (Firefly)"
+    description = "Implementation template for the service"
+    implements = juniper.resourceTypes.FireflyVcpe
+
+    plans {
+
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/juniper/firefly_vcpe_activate.py"
+      }
+
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/juniper/firefly_vcpe_terminate.py"
+      }
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/juniper/firefly_vcpe_update.py"
+      }
+
+    }
+  }
+}

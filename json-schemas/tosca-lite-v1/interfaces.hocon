@@ -1,0 +1,45 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/interfaces#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Interfaces Definition"
+type        = object
+required    = [ title ]
+
+properties {
+
+  title {
+    type = string
+    maxLength = 64
+    description = """
+    Brief human readable title for the requirement definition used for UI labels, etc.
+    """
+  }
+
+  description {
+    type = string
+    description = """
+    Long form human readable description of the requirement definition used for UI help text, etc.
+    """
+  }
+
+  inputs.type = object
+  outputs.type = object
+
+  executionGroup {
+    type = string
+    maxLength = 64
+    description = """
+    Name of the group in which all operations instantiated on this interface will execute.
+    If unspecified, it will default to the "lifecycle" group.
+    """
+  }
+
+  internalOnly {
+    type = boolean
+    description = """
+    Whether this interface should be publicly visible or if it represents an interface which should be hidden
+    from users.
+    """
+  }
+}
+
+additionalProperties = false

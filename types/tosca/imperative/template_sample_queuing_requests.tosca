@@ -1,0 +1,301 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a remote service"
+package     = tosca
+version     = "1.0"
+description = ""
+
+resourceTypes {
+  QueuingRequestTopLevel {
+    title = "Remote Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+    }
+  }
+  QueuingRequestChild {
+    title = "Remote Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+    }
+  }
+  QueuingRequestTopLevel2 {
+    title = "Remote Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+        updatable = true
+      }
+      prop3 {
+        title = "Prop3"
+        description = "Optional Property 3"
+        type = string
+        config = true
+        optional = true
+        updatable = true
+      }
+    }
+  }
+  QueuingRequestTopLevel3 {
+    title = "Remote Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+        updatable = true
+      }
+      prop3 {
+        title = "Prop1"
+        description = "Property 1"
+        type = array
+        config = true
+        updatable = true
+        optional = true
+        items {
+          type = object
+          config = true
+          optional = true
+          updatable = true
+        }
+      }
+    }
+  }
+  QueuingRequestTopLevel4 {
+    title = "Remote Service"
+    description = "A type with an array of objects with schema"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+        updatable = true
+      }
+      prop3 {
+        title = "Prop3"
+        description = "Property 3"
+        type = array
+        config = true
+        updatable = true
+        optional = true
+        items {
+          type = object
+          config = true
+          optional = true
+          updatable = true
+          properties {
+            key1 {
+              type = string
+              config = true
+            }
+            prop4 {
+              type = array
+              config = true
+              optional = true
+              updatable = true
+              items {
+                type = object
+                properties {
+                  key2 {
+                    type = string
+                    config = true
+                  }
+                  prop5 {
+                    type = string
+                    config = true
+                    optional = true
+                    updatable = true
+                  }
+                  prop6 {
+                    type = string
+                    config = false
+                    output = false
+                  }
+                }
+              }
+            }
+            prop7 {
+              type = string
+              config = false
+              output = false
+            }
+            prop8 {
+              type = array
+              config = true
+              updatable = true
+              items {
+                type = string
+              }
+            }
+            prop9 {
+              type = array
+              config = false
+              output = false
+              items {
+                type = string
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  QueuingRequestChild2 {
+    title = "Remote Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+        updatable = true
+       }
+    }
+  }
+
+}
+
+serviceTemplates {
+
+  QueuingRequestServiceTemplate1 {
+    title = ""
+    description = ""
+    implements = tosca.resourceTypes.QueuingRequestTopLevel
+    resources {
+      x {
+        type = tosca.resourceTypes.QueuingRequestChild
+        properties {
+          prop1 = { getParam = "prop1" }
+        }
+      }
+    }
+  }
+
+  QueuingRequestServiceTemplate2 {
+    title = Imperative Implementation
+    description = "To demo a queuing request implementation"
+    implements = tosca.resourceTypes.QueuingRequestChild
+
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+  QueuingRequestServiceTemplate3 {
+    title = ""
+    description = ""
+    implements = tosca.resourceTypes.QueuingRequestTopLevel2
+    resources {
+      x {
+        type = tosca.resourceTypes.QueuingRequestChild2
+        properties {
+          prop1 = { getParam = "prop1" }
+          prop2 = { getParam = "prop2" }
+        }
+      }
+    }
+  }
+  QueuingRequestServiceTemplateWhileActivating {
+    title = Imperative Implementation
+    description = "To demo a queuing request implementation"
+    implements = tosca.resourceTypes.QueuingRequestTopLevel
+
+    plans {
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_activate.py"
+      }
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+      }
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_queue_requests_terminate.py"
+      }
+    }
+  }
+  QueuingRequestServiceTemplate4 {
+    title = Imperative Implementation
+    description = "To demo a queuing request implementation"
+    implements = tosca.resourceTypes.QueuingRequestTopLevel3
+
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = true
+      }
+    }
+  }
+  QueuingRequestServiceTemplate5 {
+    title = Imperative Implementation
+    description = "To demo a queuing request implementation"
+    implements = tosca.resourceTypes.QueuingRequestTopLevel4
+
+    plans {
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = true
+      }
+    }
+  }
+}

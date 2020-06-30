@@ -1,0 +1,155 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template to demo imperative style operations"
+package     = tosca
+version     = "1.0"
+description = """
+A type and a template to show how a callout to active and terminate can be used.
+"""
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)"
+]
+
+resourceTypes {
+
+  DemoService {
+    title = "Demo Service"
+    description = "A simple type with a few properties, some of which are input others output"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+
+      prop1 {
+        title = "Prop1"
+        description = "Property 1"
+        type = string
+        updatable = true
+      }
+
+      prop2 {
+        title = "Prop2"
+        description = "Property 2"
+        type = string
+        output = true
+      }
+
+      prop3 {
+        title = "Prop3"
+        description = "Property 3"
+        type = integer
+        output = true
+      }
+
+      prop4 {
+        description = "user_id"
+        type = string
+        output = true
+      }
+
+      prop5 {
+        description = "tenant_id"
+        type = string
+        output = true
+      }
+
+      prop6 {
+        description = "role_id"
+        type = string
+        output = true
+      }
+
+      prop7 {
+        description = "Output copy of prop1"
+        type = string
+        output = true
+      }
+
+      prop8 {
+        description = "Operationa name"
+        type = string
+        output = false
+        config = false
+        updatable = true
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  ImperativeDemoServiceImp {
+    title = Imperative Implementation
+    description = To demo an imperative implementation of DemoService
+    implements = tosca.resourceTypes.DemoService
+
+    plans {
+
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_activate.py"
+      }
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+      }
+
+      terminate {
+        type = script
+        language = python
+        // This file does not exist. This is used to test error handling in the Template Engine. See
+        // TemplateSpecImperative.scala.
+        path = "types/tosca/imperative/imperative_demo_terminate.py"
+      }
+
+    }
+
+    validators {
+
+        activate {
+            type = script
+            language = python
+            path = "types/tosca/imperative/imperative_activate_validate.py"
+        }
+
+        update {
+            type = script
+            language = python
+            path = "types/tosca/imperative/imperative_update_validate.py"
+        }
+
+    }
+
+    output = {
+      prop2 = { getAttr = [ activate, prop2 ] }
+      prop3 = { getAttr = [ activate, prop3 ] }
+      prop4 = { getAttr = [ activate, prop4 ] }
+      prop5 = { getAttr = [ activate, prop5 ] }
+      prop6 = { getAttr = [ activate, prop6 ] }
+      prop7 = { getAttr = [ activate, prop1 ] }
+      prop8 = { getAttr = [ activate, prop8 ] }
+    }
+  }
+
+  ImperativeDemoServiceWithoutAutoClear {
+    title = Imperative Implementation
+    description = "To demo an imperative implementation of DemoService with autoClearDifferences = false"
+    implements = tosca.resourceTypes.DemoService
+
+    plans {
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_update.py"
+        autoClearDifferences = false
+      }
+
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/imperative/imperative_demo_termin8.py"
+      }
+    }
+  }
+}

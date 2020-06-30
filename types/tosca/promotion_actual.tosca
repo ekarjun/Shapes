@@ -1,0 +1,82 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template for service discovery"
+package     = tosca
+version     = "1.0"
+description = """ """
+
+resourceTypes {
+
+  TopLevelVM {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propTop {
+        title       = "Some Prop"
+        description = ""
+        type        = integer
+      }
+    }
+  }
+
+  MidLevelVM {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propMid {
+        title       = "Some Prop"
+        description = ""
+        type        = integer
+      }
+    }
+  }
+}
+
+
+serviceTemplates {
+
+    TopLevelServiceVM {
+       title = Top Level Service
+       description = Top Level Service
+       implements = tosca.resourceTypes.TopLevelVM
+       resources {
+         l1 {
+           title = "Demo Title"
+           description = "This is a Demo Description"
+           type = tosca.resourceTypes.MidLevelVM
+           properties = {
+             propMid = { getParam = propTop }
+           }
+         }
+       }
+    }
+
+    MidLevelServiceVM {
+       title = Mid level resource
+       description = Mid Level Service
+       implements = tosca.resourceTypes.MidLevelVM
+       resources {
+         vm1 {
+           title = "vm 1"
+           description = "vm 1 Description"
+           type = openstack.resourceTypes.VirtualMachine
+           properties = {
+             numCpus = { getParam = propMid }
+           }
+         }
+          vm2 {
+            title = "vm"
+            description = "vm 2 Description"
+            type = openstack.resourceTypes.VirtualMachine
+            properties = {
+              numCpus = { getParam = propMid }
+            }
+          }
+       }
+    }
+}

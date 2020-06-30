@@ -1,0 +1,85 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "EPL resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Epl resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Link = tosca.resourceTypes.Link
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Epl {
+    derivedFrom = Link
+    title = "Ethernet Private Line"
+    description = """
+      Ethernet Private Line resource.
+    """
+
+    properties {
+
+      aEndPort {
+        title = "A-End Port"
+        description = "Unique ID of A-end UNI port"
+        type = string
+      }
+
+      aEndBwProfile {
+        title = "A-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of A-End"
+        type = string
+        optional = true
+        updatable = true
+      }
+
+      zEndPort {
+        title = "Z-End Port"
+        description = "Unique ID of Z-end UNI port"
+        type = string
+      }
+
+      zEndBwProfile {
+        title = "Z-End Bandwidth Profile"
+        description = "Ingress bandwidth profile of Z-End"
+        type = string
+        optional = true
+        updatable = true
+      }
+
+    }
+
+    requirements {
+
+      epA {
+        title = "EPL A-end"
+        description = "An EPL requires an A-end endpoint"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EvcEndPoint ]
+        minimum = 1
+        maximum = 1
+      }
+
+      epZ {
+        title = "EPL Z-end"
+        description = "An EPL requires a Z-end endpoint"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EvcEndPoint ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      connectivity {
+        title = "Network Services"
+        description = "An EPL provides WAN connectivity for Network Services"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.NetworkService ]
+      }
+    }
+  }
+}

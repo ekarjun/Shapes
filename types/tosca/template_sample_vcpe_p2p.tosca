@@ -1,0 +1,99 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for Point-to-Point vCPE capable to do Firewall and/or Encryption, and EVPL"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: p2pVcpe
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyainc.com)",
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Darren Dowker (darren.dowker@cyaninc.com)"
+]
+
+imports {
+  HeatStack = tosca.resourceTypes.HeatStack
+  Root = tosca.serviceTemplates.Root
+  P2pVcpe = tosca.resourceTypes.P2pVcpe
+}
+
+serviceTemplates {
+
+  P2pVcpe {
+    title = Point-to-Point vCPE
+    description = P2P vCPE implemented as a heat stacks
+    implements = P2pVcpe
+
+    // Inherent properties from the implemented P2PvCpe type:
+    // - firewallEnabled
+    // - encryptionEnabled
+    // - aEndUniNet
+    // - zEndUniNet
+    // - nniNet
+    // - localNet
+    // - publicNet
+    // - privateNet
+    // - keyName
+    // - aEndDeploymentLocation
+    // - zEndDeploymentLocation
+    // - aEndPort
+    // - aEndVlanId
+    // - aEndBwProfile
+    // - zEndPort
+    // - zEndVlanId
+    // - zEndBwProfile
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      evpl {
+        title = "EVPL component (WAN)"
+        type = tosca.resourceTypes.Evpl
+        product {domain = {getDomain {getParam = aEndPort}}}
+        properties {
+          aEndPort = {getParam = aEndPort}
+          aEndVlanId = {getParam = aEndVlanId}
+          aEndBwProfile = {getParam = aEndBwProfile}
+          zEndPort = {getParam = zEndPort}
+          zEndBwProfile = {getParam = zEndBwProfile}
+          zEndVlanId = {getParam = zEndVlanId}
+        }
+      }
+
+      aEndVcpe {
+        title = "A-End vCPE"
+        type = tosca.resourceTypes.Vcpe
+        properties {
+          firewallEnabled = {getParam = firewallEnabled}
+          encryptionEnabled = {getParam = encryptionEnabled}
+          uniNet = {getParam = aEndUniNet}
+          nniNet = {getParam = nniNet}
+          localNet = {getParam = localNet}
+          publicNet = {getParam = publicNet}
+          privateNet = {getParam = privateNet}
+          keyName = {getParam = keyName}
+          deploymentLocation = {getParam = aEndDeploymentLocation}
+        }
+      }
+
+      zEndVcpe {
+        title = "Z-End vCPE"
+        type = tosca.resourceTypes.Vcpe
+        properties {
+          firewallEnabled = {getParam = firewallEnabled}
+          encryptionEnabled = {getParam = encryptionEnabled}
+          uniNet = {getParam = zEndUniNet}
+          nniNet = {getParam = nniNet}
+          localNet = {getParam = localNet}
+          publicNet = {getParam = publicNet}
+          privateNet = {getParam = privateNet}
+          keyName = {getParam = keyName}
+          deploymentLocation = {getParam = zEndDeploymentLocation}
+        }
+      }
+    }
+  }
+}

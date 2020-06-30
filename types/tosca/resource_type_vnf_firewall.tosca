@@ -1,0 +1,94 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "vFirewall resource type"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VirtualFirewall resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  VirtualFirewall {
+
+    derivedFrom = Vnf
+    title = Virtual Firewall
+    description = """
+      A Firewall appliance as a VNF
+    """
+
+    properties {
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the Firewall shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the Firewall VM"
+        type = string
+      }
+
+// TODO: the subnet will come from the private net search
+
+      privateSubnet {
+        title = "Private network subnet"
+        description = "UUID of the private subnetwork configured on the privateNet above"
+        type = string
+      }
+
+      fwInNetwork {
+        title = "Network on the ingress of the Firewall"
+        description = "UUID of an existing internal network for the ingress traffic of FW"
+        type = string
+      }
+
+      fwInSubnet {
+        title = "Subnetwork on the ingress of the Firewall"
+        description = "UUID of a subnet on existing internal network for the ingress traffic of FW"
+        type = string
+      }
+
+      fwOutNetwork {
+        title = "Network on the egress of the Firewall "
+        description = "UUID of an existing provider / local network for the egress traffic of FW"
+        type = string
+      }
+
+      fwOutSubnet {
+        title = "Subnetwork on the egress of the Firewall"
+        description = "UUID of a subnet on existing provider / local network for the egress traffic of FW"
+        type = string
+      }
+
+      keyName {
+        title = "Firewall SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the instances"
+        type = string
+      }
+
+      deploymentLocation {
+        title = "Virtual Firewall deployment location"
+        description = "Host placement directive to OpenStack for the Firewall instance"
+        type = string
+      }
+
+    }
+
+    requirements {
+
+      contained {
+        title = "Virtual CPE"
+        description = "A Virtual Firewall VNF is contained in a Virtual CPE"
+        type = tosca.capabilityTypes.Container
+        resourceTypes = [ tosca.resourceTypes.Vcpe ]
+        minimum = 0
+        maximum = 1
+      }
+    }
+  }
+}

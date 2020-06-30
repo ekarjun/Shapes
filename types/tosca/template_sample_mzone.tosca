@@ -1,0 +1,84 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for MZone capable to do vDNS, vEPC and EPL"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: MZone
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyaninc.com)",
+]
+
+imports {
+  Root = tosca.serviceTemplates.Root
+}
+
+serviceTemplates {
+
+  Mzone {
+    title = Mobility Zone
+    description = Mobility Zone implemented as heat stacks and EPL
+    implements = tosca.resourceTypes.Mzone
+
+    // Inherent properties from the implemented Mzone type:
+    // - publicNet
+    // - privateNet
+    // - utranNet
+    // - keyName
+    // - templateUrlDir
+    // - externalDnsServer
+    // - domain
+    // - records
+    // - aEndPort
+    // - aEndBwProfile
+    // - zEndPort
+    // - zEndBwProfile
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      epl {
+        title = "EPL for Mobile Backhaul"
+        type = tosca.resourceTypes.Epl
+        product {domain = {getDomain {getParam = aEndPort}}}
+        properties {
+          aEndPort = {getParam = aEndPort}
+          aEndBwProfile = {getParam = aEndBwProfile}
+          zEndPort = {getParam = zEndPort}
+          zEndBwProfile = {getParam = zEndBwProfile}
+        }
+      }
+
+      vDns {
+        title = "Virtual DNS"
+        type = tosca.resourceTypes.VirtualDns
+        properties {
+          publicNet = {getParam = publicNet}
+          privateNet = {getParam = privateNet}
+          keyName = {getParam = keyName}
+          templateUrlDir = {getParam = templateUrlDir}
+          externalDnsServer = {getParam = externalDnsServer}
+          domain = {getParam = domain}
+          records = {getParam = records}
+        }
+      }
+
+      vEpc {
+        title = "Virtual EPC"
+        type = tosca.resourceTypes.Vepc
+        properties {
+          publicNet = {getParam = publicNet}
+          privateNet = {getParam = privateNet}
+          utranNet = {getParam = utranNet}
+          keyName = {getParam = keyName}
+          dnsAddresses = {getAttr = [vDns, publicAddress]}
+          templateUrlDir = {getParam = templateUrlDir}
+        }
+      }
+
+    }
+  }
+}

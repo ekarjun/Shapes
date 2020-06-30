@@ -1,0 +1,77 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic relationship types"
+package     = "tosca"
+version     = "1.0"
+description = "This document defines the built-in basic relationship types."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+relationshipTypes {
+
+  Root {
+    title = Root
+    description = """
+      This is the root from which all relationship types shall be derived, directly or
+      indirectly
+    """
+  }
+
+  DependsOn {
+    derivedFrom = tosca.relationshipTypes.Root
+    title = "Depends On"
+    description = """Relationship type to express dependency relationships"""
+    validSource = tosca.capabilityTypes.Feature
+    validTarget = tosca.capabilityTypes.Feature
+  }
+
+  HostedOn {
+    derivedFrom = tosca.relationshipTypes.DependsOn
+    title = "Hosted On"
+    description = """Relationship type to express when one resource is hosted on another resource"""
+    validSource = tosca.capabilityTypes.Container
+    validTarget = tosca.capabilityTypes.Container
+  }
+
+  ConnectsTo {
+    derivedFrom = tosca.relationshipTypes.DependsOn
+    title = "Connects To"
+    description = """Relationship type to express a service connection from one resource to another"""
+    validSource = tosca.capabilityTypes.Endpoint
+    validTarget = tosca.capabilityTypes.Endpoint
+  }
+
+  MadeOf {
+    derivedFrom = tosca.relationshipTypes.DependsOn
+    title = "Made Of"
+    description = """Relationship type to express when one resource is a critical sub-component of another resource"""
+    validSource = tosca.capabilityTypes.Container
+    validTarget = tosca.capabilityTypes.Container
+
+    properties {
+
+          updateParent {
+            title       = "updateParent"
+            description = "Used to indicate that source of relationship should be updated when target is updated"
+            type        = boolean
+            optional    = true
+            updatable   = true
+          }
+     }
+  }
+
+  AllocatedFrom {
+    derivedFrom = tosca.relationshipTypes.DependsOn
+    title = "Allocated From"
+    description = """Relationship type to express when one resource is allocated from another resource (e.g., a pool)"""
+    validSource = tosca.capabilityTypes.Container
+    validTarget = tosca.capabilityTypes.Container
+  }
+
+  BacksUp {
+    derivedFrom = tosca.relationshipTypes.DependsOn
+    title = "Backs Up"
+    description = """Relationship type to express when one resource backs up another resource"""
+    validSource = tosca.capabilityTypes.Feature
+    validTarget = tosca.capabilityTypes.Feature
+  }
+}
+

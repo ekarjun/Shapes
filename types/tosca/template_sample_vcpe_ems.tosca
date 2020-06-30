@@ -1,0 +1,401 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for Firewall and/or Encryption EMS"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: VcpeFirewallEms
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyainc.com)",
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Darren Dowker (darren.dowker@cyaninc.com)"
+]
+
+imports {
+  HeatStack = tosca.resourceTypes.HeatStack
+  Root = tosca.serviceTemplates.Root
+  VcpeEms = tosca.resourceTypes.VcpeEms
+}
+
+serviceTemplates {
+
+  VcpeEms {
+    title = vCPE EMS
+    description = EMS for vCPE Firewall and/or Encryption implemented as a heat stacks
+    implements = VcpeEms
+
+    // Inherent properties from the implemented VirtualDns type:
+    // - firewallEnabled
+    // - encryptionEnabled
+    // - publicNet
+    // - privateNet
+    // - keyName
+    // - deploymentLocation
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+      search {
+        title = "Find derived values"
+        type = tosca.resourceTypes.CatalogSearch
+        properties {
+          input {
+            privateNet {getParam = privateNet}
+          }
+          toFind = [privateSubnet]
+          query = """
+            (subnetOf ?privateSubnet ?privateNet)
+          """
+        }
+      }
+
+      firewall {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        createIf = {getParam = firewallEnabled}
+        properties {
+          templateInputArgs = {
+            ExternalNetwork = {getProviderResourceId {getParam = publicNet}}
+            InternalNetwork = {getProviderResourceId {getParam = privateNet}}
+            Subnet = {getProviderResourceId {getAttr = [search, output.privateSubnet]}}
+            KeyName = {getParam = keyName}
+            DeploymentLocation = {getParam = deploymentLocation}
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "This template deploys a single-instance of FortiManager VM",
+
+  "Parameters" : {
+
+    "ExternalNetwork" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "InternalNetwork" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "Subnet" : {
+      "Description" : "UUID of a subnet on existing internal network",
+      "Type" : "String"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an existing KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+
+    "DeploymentLocation" : {
+      "Description" : "Host placement directive to OpenStack for FortiManager",
+      "Type" : "String",
+      "Default" : "nova"
+    },
+
+    "HostIpAddr" : {
+      "Description" : "Fixed IP address to be assigned on the subnet",
+      "Type" : "String",
+      "Default" : "10.0.0.11"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "LinuxDistribution": {
+      "Default": "CentOS-64",
+      "Description" : "Distribution of choice",
+      "Type": "String",
+      "AllowedValues" : [ "CentOS-64" ]
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"    : { "Arch" : "64" },
+      "m1.large"   : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "trustnet.small"   : { "Arch" : "64" }
+    },
+    "DistroArch2AMI": {
+      "CentOS-64"  : { "32" : "", "64" : "fmg-snapshot-05-12-14" }
+    }
+  },
+
+  "Resources" : {
+
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "services" : {
+              "sysvinit" : {
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId" : { "Fn::FindInMap" : [ "DistroArch2AMI", { "Ref" : "LinuxDistribution" },
+                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "AvailabilityZone" : { "Ref" : "DeploymentLocation" },
+        "NetworkInterfaces": [ { "Ref": "port_floating" } ]
+     }
+    },
+
+    "port_floating": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InternalNetwork" },
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "Subnet" },
+          "ip_address": { "Ref" : "HostIpAddr" }
+        }]
+      }
+    },
+
+    "fip": {
+      "Type": "OS::Neutron::FloatingIP",
+      "Properties": {
+        "floating_network_id": { "Ref" : "ExternalNetwork" }
+      }
+    },
+
+    "fip_assoc": {
+      "Type": "OS::Neutron::FloatingIPAssociation",
+      "Properties": {
+        "floatingip_id": { "Ref" : "fip" },
+        "port_id": { "Ref" : "port_floating" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "server", "PrivateIp" ]},
+      "Description" : "Private IP address of server (DC-internal)"
+    },
+
+    "EMSAccess" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}, "/" ]] },
+      "Description" : "Web EMS access to Firewall server"
+    },
+
+    "FortiManager" : {
+      "Value" : { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]},
+      "Description" : "IP address of FortiManager server"
+    }
+
+  }
+}
+"""
+        }
+      }
+
+      encryption {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        createIf = {getParam = encryptionEnabled}
+        properties {
+          templateInputArgs = {
+            ExternalNetwork = {getProviderResourceId {getParam = publicNet}}
+            InternalNetwork = {getProviderResourceId {getParam = privateNet}}
+            Subnet = {getProviderResourceId {getAttr = [search, output.privateSubnet]}}
+            KeyName = {getParam = keyName}
+            DeploymentLocation = {getParam = deploymentLocation}
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "This template deploys a single-instance of TrustNet Manager VM",
+
+  "Parameters" : {
+
+    "ExternalNetwork" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "InternalNetwork" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "Subnet" : {
+      "Description" : "UUID of a subnet on existing internal network",
+      "Type" : "String"
+    },
+
+    "HostIpAddr" : {
+      "Description" : "Fixed IP address to be assigned on the subnet",
+      "Type" : "String",
+      "Default" : "10.0.0.10"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an existing KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+
+    "DeploymentLocation" : {
+      "Description" : "Host placement directive to OpenStack for TrustNet Manager",
+      "Type" : "String",
+      "Default" : "nova"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "trustnet.small",
+      "AllowedValues" : [ "m1.small", "m1.medium", "m1.large", "m1.xlarge", "trustnet.small" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "LinuxDistribution": {
+      "Default": "CentOS-64",
+      "Description" : "Distribution of choice",
+      "Type": "String",
+      "AllowedValues" : [ "CentOS-64" ]
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"    : { "Arch" : "64" },
+      "m1.large"   : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "trustnet.small"   : { "Arch" : "64" }
+    },
+    "DistroArch2AMI": {
+      "CentOS-64"  : { "32" : "", "64" : "tnman-snapshot-3-27-14" }
+    }
+  },
+
+  "Resources" : {
+
+    "trustnetsecgroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "TrustNet Manager access",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "8080", "ToPort" : "8080", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "8443", "ToPort" : "8443", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "21", "ToPort" : "21", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "2221", "ToPort" : "2221", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "2300", "ToPort" : "2300", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "2399", "ToPort" : "2399", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "123", "ToPort" : "123", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "514", "ToPort" : "514", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "services" : {
+              "sysvinit" : {
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId" : { "Fn::FindInMap" : [ "DistroArch2AMI", { "Ref" : "LinuxDistribution" },
+                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "AvailabilityZone" : { "Ref" : "DeploymentLocation" },
+        "NetworkInterfaces": [ { "Ref": "port_floating" } ],
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "#sudo service sshd start\n",
+          "/opt/aws/bin/cfn-init\n",
+          "echo 'Start' > ari.txt\n",
+          "/etc/init.d/policyserver-install\n",
+          "echo 'Done' >> ari.txt\n"
+        ]]}}
+     }
+    },
+
+    "port_floating": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "InternalNetwork" },
+ 	"security_groups": [ { "Ref" : "trustnetsecgroup" } ],
+        "fixed_ips": [{
+          "subnet_id": { "Ref" : "Subnet" },
+          "ip_address": { "Ref" : "HostIpAddr" }
+        }]
+      }
+    },
+
+    "fip": {
+      "Type": "OS::Neutron::FloatingIP",
+      "Properties": {
+        "floating_network_id": { "Ref" : "ExternalNetwork" }
+      }
+    },
+
+    "fip_assoc": {
+      "Type": "OS::Neutron::FloatingIPAssociation",
+      "Properties": {
+        "floatingip_id": { "Ref" : "fip" },
+        "port_id": { "Ref" : "port_floating" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "server", "PrivateIp" ]},
+      "Description" : "Private IP address of server (DC-internal)"
+    },
+
+    "EMSAccess" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}, ":8080/" ]] },
+      "Description" : "Web access to TrustNet Manager server"
+    },
+
+    "TnmServer" : {
+      "Value" : { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]},
+      "Description" : "IP address of TrustNet Manager server"
+    }
+
+  }
+}
+"""
+        }
+      }
+    }
+  }
+}

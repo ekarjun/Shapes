@@ -1,0 +1,43 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/parent-locator#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite template locator"
+
+type        = object
+
+required    = [ type ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type = string
+    maxLength = 32
+  }
+
+  description {
+    description = """
+      This is a more verbose description of the parent locator.
+    """
+    type = string
+  }
+
+  product {
+    description = "Reference to the product id, which may be static, or a function"
+    anyOf = [
+      { type = string }
+      { type = object }
+    ]
+  }
+
+  type {
+    description = "Refers to the resource type that of this resource"
+    type = string
+  }
+
+  resourceLocator.type = object // TODO: handle it better
+}
+
+additionalProperties = false

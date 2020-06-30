@@ -1,0 +1,60 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "L2 VPN resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the L2Vpn resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  L2Vpn {
+    derivedFrom = NetworkAttachable
+    title = "Layer 2 VPN"
+    description = """
+      A VPN connecting a L2 switching domain in a DC to an external L2 domain.
+    """
+
+    properties {
+
+      network {
+        title = "DC Network"
+        description = "DC Network id"
+        type = string
+      }
+
+      gwPort {
+        title = "Gateway WAN Port"
+        description = "Gateway WAN port id"
+        type = string
+      }
+
+      gwPortVlanId {
+        title = "Gateway WAN Port VLAN Id"
+        description = "Gateway WAN port VLAN Id/tag (read-only)"
+        type = integer
+        minimum = 1
+        maximum = 4095
+        optional = true
+        config = false
+      }
+
+    }
+
+    requirements {
+
+      gateway {
+        title = "L2 Gateway"
+        description = "An L2VPN is hosted on an L2 gateway"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.L2Gateway ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

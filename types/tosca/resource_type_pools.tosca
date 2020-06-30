@@ -1,0 +1,280 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Miscellaneous pool resource types"
+package     = tosca
+version     = "1.0"
+description = "This document defines an abstract base type for pools and a few concrete pool implementations."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Pool {
+    derivedFrom = Root
+    abstract = true
+    title = Pool Base Type
+    description = Abstract base type for resource pools
+  }
+
+  NumberPool {
+    derivedFrom = tosca.resourceTypes.Pool
+    title = Number Pool
+    description = """
+      A pool representing a consecutive range of integer numbers from which individual entries can be allocated.
+      For every instance of such pool, a product of type "PooledNumber" is auto-created. Allocating entries from the
+      pool happens though instantiating PooledNumber:s from the product. These numbers are auto-linked to the
+      pool instance. Deleting a PooledNumber instance releases the given number to the pool.
+    """
+
+    properties {
+
+      lowest {
+        title = "Lowest value"
+        description = """
+          The lowest value available in the pool (valid values are between -(2^63) through 2^63-2).
+          Must be less than the "highest" value.
+        """
+        type = integer
+        format = int64
+        updatable = false
+      }
+
+      highest {
+        title = "Highest value"
+        description = """
+          The highest value available in the pool (valid values are between -(2^63)+1 through 2^63-1).
+          Must be greater than the "lowest" value.
+        """
+        type = integer
+        format = int64
+        updatable = false
+      }
+
+      free {
+        title = "Available entries"
+        description = """
+          Number of entries in the pool still available.
+        """
+        type = integer
+        format = int64
+        config = false
+        store = false
+      }
+
+      size {
+        title = "Allocated entries"
+        description = """
+          Number of entries in the pool already allocated.
+        """
+        type = integer
+        format = int64
+        config = false
+        store = false
+      }
+
+    }
+
+    capabilities {
+
+      pooledNumber {
+        title = Pooled Number
+        description = """
+        For relationships to express that a value was allocated from this pool.
+      """
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.PooledNumber ]
+      }
+
+    }
+  }
+
+  PooledNumber {
+    derivedFrom = Root
+    title = Number from Pool
+    description = """
+      This resource represents a value allocated from a specific NumberPool.
+    """
+
+    properties {
+
+      requestedValue {
+        title = "Requested Value"
+        description = """
+          The value to be requested from the pool.
+        """
+        type = integer
+        format = int64
+        optional = true
+        updatable = false
+      }
+
+      allocatedValue {
+        title = "Allocated Value"
+        description = """
+          This resource is auto-linked to the pool instance from which it is allocated. Deleting a PooledNumber
+          instance releases the given number to the pool. The number can be requested at creation time, or can be
+          left for the pool to pick an available value.
+        """
+        type = integer
+        format = int64
+        output = true
+      }
+
+    }
+
+    requirements {
+
+      pool {
+        title = Pool
+        description = "Points to the pool from which this value was allocated."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.NumberPool ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+
+  IpV4AddressPool {
+    derivedFrom = tosca.resourceTypes.Pool
+    title = IPv4 Address Pool
+    description = """
+      A pool representing a consecutive range of IP v4 addresses from which individual entries can be allocated.
+      For every instance of such pool, a product of type "PooledIpV4Address" is auto-created. Allocating entries from
+      the pool happens though instantiating PooledIpV4Address:s from the product. These numbers are auto-linked to the
+      pool instance. Deleting a PooledIpV4Address instance releases the given number to the pool.
+    """
+
+    properties {
+
+      prefix {
+        title = "Pool prefix"
+        description = """
+          CDIR value representing the total available address range for the pool. E.g., "0.0.0.0/0" denotes all
+          possible IP addresses, "10.10.0.0/16" represents a 64K address block starting at 10.10.0.0
+        """
+        type = string
+        //format = ipv4address
+        updatable = false
+      }
+
+      free {
+        title = "Available entries"
+        description = """
+          Number of entries in the pool still available.
+        """
+        type = integer
+        format = int64
+        config = false
+        store = false
+      }
+
+      size {
+        title = "Allocated entries"
+        description = """
+          Number of entries in the pool already allocated.
+        """
+        type = integer
+        format = int64
+        config = false
+        store = false
+      }
+
+    }
+
+    capabilities {
+
+      pooledAddress {
+        title = Pooled Address
+        description = """
+        For relationships to express that an address was allocated from this pool.
+      """
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.PooledIpV4Address ]
+      }
+
+    }
+
+  }
+
+  PooledIpV4Address {
+    derivedFrom = Root
+    title = Address from Pool
+    description = """
+      This resource represents a IP v4 address value allocated from a specific IpV4AddressPool.
+      Allocation can be controlled by the optional use of the value and prefixLen fields, as follows:
+
+      If none are provided at creation time, a single IP address will be allocated and the value will be placed
+      into the "value" field as an IP address, e.g., "10.10.12.5". The prefixLen field will be set to 32.
+
+      If the value is provided at create time, and is a single IP address, an attempt will be made to allocate that
+      specific IP address. The prefixLen field will be set to 32.
+
+      If the value is provided at create time, and is a CIDR string, an attempt will be made to allocate that
+      specific CIDR subnet. The prefixLen field will be set to the appropriate value.
+
+      If no value is provided, but a prefixLen value is provided, an attempt to allocate a CIDR of given prefix
+      length will be made, and the CIDR will be written to the "value" field.
+
+      If the allocation is not successful, the resource will be marked failed, and no change will take place
+      to either field.
+
+      This resource is auto-linked to the pool instance from which it is allocated. Deleting a IpV4AddressPool
+      instance releases the given number to the pool. The number can be requested at creation time, or can be
+      left for the pool to pick an available value.
+    """
+
+    properties {
+
+      requestedValue {
+        title = "Requested Value"
+        description = """
+          The value requested from the pool. This may be an IP address or a CIDR prefix.
+          See the resource description for further details.
+        """
+        type = string
+        //format = ipv4address
+        optional = true
+        updatable = false
+      }
+
+      prefixLen {
+        title = "The prefix length for the allocated value"
+        description = """
+          The prefix length for the allocation. Primarily used as an arbitrary CIDR with given prefix len is requested,
+          but the actual allocation is left to the system.
+          See the resource description for further details.
+        """
+        type = integer
+        optional = true
+        updatable = false
+      }
+
+      allocatedValue {
+        title = "Allocated Value"
+        description = "The value allocated from the pool."
+        type = string
+        output = true
+      }
+
+    }
+
+    requirements {
+
+      pool {
+        title = Pool
+        description = "Points to the pool from which this value was allocated."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.IpV4AddressPool ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+
+}

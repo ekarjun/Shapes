@@ -1,0 +1,400 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "IP VPN 2-VNF Service"
+package     = versa
+version     = "1.0"
+description = "This document defines the IP VPN 2-VNF service as a resource type and a service template"
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  IpVpn2VnfService {
+    derivedFrom = tosca.resourceTypes.NFVService
+    title = "IP VPN (2-VNF)"
+    description = """
+      This resource type defines a sample service providing service.
+    """
+
+    properties {
+
+      // "Customer" info panel
+
+      customer {
+        title = "Customer Name"
+        description = "Name of the customer"
+        type = string
+      }
+
+      customerVlanId {
+        title = "VLAN Id"
+        description = "VLAN id associated with customer"
+        type = integer
+      }
+
+      customerVnfIp {
+        title = "Customer VNF-side IP"
+        description = "Customer's VNF-side IP address (e.g., 192.168.10.254)"
+        type = string
+      }
+
+      customerNetmask {
+        title = "Customer Network Netmask"
+        description = "Customer's private network netmask (e.g., 255.255.255.0)"
+        type = string
+      }
+
+      // "Placement" panel
+
+      domainName {
+        // should be chosen from title's of existing versa.resourceTypes.Director
+        title = "Domain Name"
+        description = "Name of the Versa Domain to be used for deploying the service"
+        type = string
+      }
+
+      globalOrgName {
+        // should be chosen from title's of existing versa.resourceTypes.Organization
+        title = "Parent Organization Name"
+        description = "Name of the parent Versa Organization for the service"
+        type = string
+      }
+
+      privateSideVPort {
+        title = "Private Side vPort of Service Chain"
+        description = "Customer facing v-port of service chain (e.g., vni-0/1)"
+        type = string
+      }
+
+      privateSideUnitNumber {
+        title = "Customer-facing Service Chain Unit Number"
+        description = "Unit number representing customer on this appliance (e.g., 121)"
+        type = integer
+      }
+
+      publicSideVPort {
+        title = "Public Side vPort of Service Chain"
+        description = "Public facing v-port of service chain (e.g., vni-0/2)"
+        type = string
+      }
+
+      fwAppliance {
+        // should be chosen from title's of existing versa.resourceTypes.Appliance
+        title = "Firewall Appliance Name"
+        description = "Name of the firewall appliance within the domain"
+        type = string
+      }
+
+      fwSvcChainUnitNumber {
+        title = "Firewall Appliance Service Chain Unit Number"
+        description = "Unit number representing service chain on firewall appliance (e.g., 100)"
+        type = integer
+      }
+
+      svcChainVlanId {
+        title = "Service Chain VLAN Id"
+        description = "VLAN id associated with Firewall to NAT connectivity"
+        type = integer
+      }
+
+      natAppliance {
+        // should be chosen from title's of existing versa.resourceTypes.Appliance
+        title = "NAT Appliance Name"
+        description = "Name of the nat appliance within the domain"
+        type = string
+      }
+
+      natSvcChainVPort {
+        title = "NAT Appliance Service Chain vPort"
+        description = "Service chain facing v-port of NAT VNF (e.g., vni-0/1)"
+        type = string
+      }
+
+      natSvcChainUnitNumber {
+        title = "NAT Appliance Service Chain Unit Number"
+        description = "Unit number representing service chain on nat appliance (e.g., 100)"
+        type = integer
+      }
+
+      // Routing panel
+
+      customerDefaultGw {
+        title = "Customer Default GW"
+        description = "Customer's default gateway IP address (e.g., 192.168.10.1)"
+        type = string
+      }
+
+      bgpRouting {
+        title = "BGP Routing Information"
+        description = "TBF"
+        type = object
+        optional = true
+
+        properties {
+
+          bgpRouterId {
+            title = "BGP Router ID"
+            description = "BGP router ID of the customer (e.g., 192.168.10.254)"
+            type = string
+          }
+
+          bgpLocalAs {
+            title = "BGP Local AS Number"
+            description = "BGP local AS number for the customer (e.g., 65000)"
+            type = integer
+          }
+
+          bgpPeerAs {
+            title = "BGP Peer AS Number"
+            description = "BGP peer AS number for the customer (e.g., 1822)"
+            type = integer
+          }
+
+          bgpPeerAddress {
+            title = "BGP Peer Address"
+            description = "BGP peer address for the customer (e.g., 192.168.10.1)"
+            type = string
+          }
+        }
+      }
+
+      // Firewall config panel
+
+      firewall {
+
+        title = "Firewall Configuration"
+        description = "All configurations related to firewall settings"
+        optional = true
+        additionalProperties = false
+        type = object
+        properties {
+
+          ingress {
+            title = "Ingress Rules"
+            description = "Rules controlling flows initiated from the public network toward the private network"
+            type = array
+            items {
+              type = object
+              properties {
+
+                rule {
+                  title = "Rule Type"
+                  description = """Rule type such as "Custom TCP", "Custom UDP", "Custom ICMP", "SSH", "HTTP", "HTTPS""""
+                  type = string
+                  enum = [
+                    "Custom TCP",
+                    "Custom UDP",
+                    "Custom ICMP",
+                    "SSH",
+                    "HTTP",
+                    "HTTPS",
+                    "SNMP",
+                    "FTP",
+                    "Ping",
+                    "Telnet"
+                    // TODO complete list here
+                  ]
+                }
+
+                fromPort {
+                  title = "From Port"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive lowest value for the port range. For ICMP, this is the
+                    code point (ICMP type code).
+                  """
+                  type = integer
+                  default = 0
+                }
+
+                toPort {
+                  title = "To Port"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive highest value for the port range. For ICMP, this is the
+                    code point (ICMP type code).
+                  """
+                  type = integer
+                  default = 65535
+                }
+
+                remotePrefix {
+                  title = "Remote Prefix"
+                  description = "CIDR of the remote end"
+                  type = string
+                }
+
+              }
+            }
+          }
+
+          egress {
+            title = "Egress Rules"
+            description = "Rules controlling flows initiated from the private network toward the public network"
+            type = array
+            items {
+              type = object
+
+              properties {
+
+                rule {
+                  title = "Rule Type"
+                  description = """Rule type such as "Custom TCP", "Custom UDP", "Custom ICMP", "SSH", "HTTP", "HTTPS""""
+                  type = string
+                  enum = [
+                    "Custom TCP",
+                    "Custom UDP",
+                    "Custom ICMP",
+                    "SSH",
+                    "HTTP",
+                    "HTTPS",
+                    "SNMP",
+                    "FTP",
+                    "Ping",
+                    "Telnet"
+                    // TODO complete list here
+                  ]
+                }
+
+                fromPort {
+                  title = "From Port"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive lowest value for the port range. For ICMP, this is the
+                    code point (ICMP type code).
+                  """
+                  type = integer
+                  default = 0
+                }
+
+                toPort {
+                  title = "To Port"
+                  description = """
+                    In case of TCP/UDP, this is the inclusive highest value for the port range. For ICMP, this is the
+                    code point (ICMP type code).
+                  """
+                  type = integer
+                  default = 65535
+                }
+
+                remotePrefix {
+                  title = "Remote Prefix"
+                  description = "CIDR of the remote end"
+                  type = string
+                }
+
+              }
+            }
+          }
+        }
+      }
+
+      // NAT config panel
+
+      staticNat {
+        title = "Static NAT Configuration"
+        description = "Configuration attributes for static NAT"
+        optional = true
+        additionalProperties = false
+        type = object
+        properties {
+
+          fromPrefix {
+            title = "From Prefix"
+            description = "Customer IP address range expressed as CIDR to which NAT is applied (e.g., 192.168.10.0/24)"
+            type = string
+          }
+
+          toPrefix {
+            title = "To Prefix"
+            description = "Public IP address range expressed as CIDR (e.g., 10.20.30.0/24)"
+            type = string
+          }
+
+        }
+      }
+
+      portForwardingNat {
+        title = "Static NAT Configuration"
+        description = "Configuration attributes for static NAT"
+        optional = true
+        type = array
+        items {
+
+          type = object
+          additionalProperties = false
+          properties {
+
+            originalDestinationIp {
+              title = "Original Destination IP"
+              description = "Original destination IP address of incoming flow (e.g., 10.20.30.24)"
+              type = string
+            }
+
+            originalDestinationPort {
+              title = "Original Destination Port"
+              description = "Original destination port of incoming flow (e.g., 22)"
+              type = string
+            }
+
+            forwardDestinationIp {
+              title = "Forward Destination IP"
+              description = "Forward destination IP address of incoming flow (e.g., 10.20.30.24)"
+              type = string
+            }
+
+            forwardDestinationPort {
+              title = "Forward Destination Port"
+              description = "Forward destination port of incoming flow (e.g., 22)"
+              type = string
+            }
+
+          }
+        }
+      }
+    }
+
+    requirements {
+
+      appliance {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+
+    }
+
+  }
+}
+
+serviceTemplates {
+
+  IpVpn2VnfService {
+
+    title = "IP VPN 2-VNF service"
+    description = "Implementation template for the service"
+    implements = versa.resourceTypes.IpVpn2VnfService
+
+    plans {
+
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_2vnf_activate.py"
+      }
+
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_2vnf_terminate.py"
+      }
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_2vnf_update.py"
+      }
+
+    }
+  }
+}

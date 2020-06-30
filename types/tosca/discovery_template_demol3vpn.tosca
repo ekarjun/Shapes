@@ -1,0 +1,262 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template for service discovery"
+package     = tosca
+version     = "1.0"
+description = """ """
+
+resourceTypes {
+
+  TopLevelL3VPN {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propZ {
+        title       = "Some Prop"
+        description = ""
+        type        = string
+        optional    = true
+      }
+    }
+  }
+
+  DemoL3VPN {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propA {
+        title       = "Some Prop"
+        description = ""
+        type        = string
+        updatable   = true
+        optional    = true
+      }
+
+      propB {
+        title       = "Memory Size"
+        description = "Size of memory, in Megabytes (MB), available to applications running on the Server resource."
+        type        = string
+        optional    = true
+        updatable   = true
+      }
+
+      propC {
+        title       = "prop C"
+        description = ""
+        type        = string
+        optional    = true
+        updatable   = true
+      }
+
+      propAA {
+        title       = "prop AA"
+        description = ""
+        type        = object
+        properties {
+            insideObj1 {
+              title = "insideObj1"
+              description = ""
+              type = string
+            }
+
+            insideObj2 {
+              title = "insideObj2"
+              description = ""
+              type = string
+            }
+        }
+
+        optional    = true
+      }
+    }
+  }
+
+  CiscoEndpoint {
+      derivedFrom = tosca.resourceTypes.Root
+      title = L3VPN
+      description = """
+        Discovered L3VPN endpoint.
+      """
+
+      properties {
+        propC {
+          title       = "Some Prop C"
+          description = ""
+          type        = integer
+          minimum     = 1
+          optional    = true
+        }
+        propD {
+          title       = "Memory Size"
+          description = "Size of memory, in Megabytes (MB)"
+          type        = string
+          optional    = true
+          updatable   = true
+        }
+        propE {
+          title       = "Memory Size"
+          description = "Size of memory, in Megabytes (MB), available to applications running on the Server resource."
+          type        = string
+          optional    = true
+          updatable   = true
+        }
+
+      }
+    }
+}
+
+
+serviceTemplates {
+    TLSActivationService {
+       title = Top Level Service
+       description = Top Level Service
+       implements = tosca.resourceTypes.TopLevelL3VPN
+       resources {
+         l1 {
+           title = "Demo Title"
+           description = "This is a Demo Description"
+           type = tosca.resourceTypes.DemoL3VPN
+           properties = {
+             propA = {join = ["-", { getParam = "propZ" }, "ServiceTemplatePropA" ] }
+           }
+         }
+       }
+    }
+
+    DiscoveryL3VPN {
+       title = Demo Level Service
+       description = Demo Level Service
+       implements = tosca.resourceTypes.DemoL3VPN
+       resources {
+         locator1 {
+           title = "Locator 1 Title"
+           description = "Locator 1 Description"
+           type = tosca.resourceTypes.CiscoEndpoint
+           properties = {
+             "propE" = {join = ["-",  { getParam = "propB" }, "ServiceTemplatePropE" ]}
+           }
+         }
+         locator2 {
+           title = "locator 2 Title"
+           description = "locator 2  Description"
+           type = tosca.resourceTypes.CiscoEndpoint
+           properties = {
+             "propE" = { join = ["-", { getParam = "propC" }, "ServiceTemplatePropE" ] }
+           }
+         }
+
+       }
+    }
+
+    CiscoEndpoint {
+       title = Cisco Endpoint Service
+       description = Cisco Endpoint Service
+       implements = tosca.resourceTypes.CiscoEndpoint
+    }
+}
+
+
+discoveryTemplates {
+
+    DiscoveryL3VPN {
+       title = Enterprise to DC connectivity
+       description = An Enterprise NID attached to a DC network.
+       implements = tosca.resourceTypes.DemoL3VPN
+       resourceLocators {
+            locator1 {
+                 title = "Locator for endpoint 1"
+                 description = ""
+                 type = tosca.resourceTypes.CiscoEndpoint
+                 resourceLocator = {
+                      label = {join = ["", "ep", 1]}
+                      "$.properties.propC" = {getAttr = [locator2, propC]}
+                      "$.properties.propD" = {getParam = propB}
+                 }
+            }
+            locator2 {
+                 title = "Locator for endpoint 2"
+                 description = ""
+                 type = tosca.resourceTypes.CiscoEndpoint
+                 resourceLocator = {
+                      label = "ep2"
+                 }
+            }
+       }
+       parentLocator {
+            title = "My Parent"
+            description = ""
+            type = tosca.resourceTypes.TopLevelL3VPN
+            resourceLocator = {
+                label = "ToplevelService"
+            }
+       }
+       properties {
+            propB = {getAttr = [locator2, propD]}
+            propA = {join = ["-", {getAttr = [locator1, propD]}, {getAttr = [locator2, propC]}]}
+            propC = {getParam = propB}
+            propAA = {"insideObj1" = {getParam = propA}, "insideObj2" = {getAttr = [locator1, propD]}}
+       }
+       requiredLocators = [locator1]
+    }
+
+    DiscoveryTopLevelL3VPN {
+       title = Enterprise to DC connectivity
+       description = An Enterprise NID attached to a DC network.
+       implements = tosca.resourceTypes.TopLevelL3VPN
+       resourceLocators {
+            l1 {
+                 title = "Locator for assembled resource"
+                 description = ""
+                 type = tosca.resourceTypes.DemoL3VPN
+                 resourceLocator = {
+                      label = "demo"
+                 }
+            }
+       }
+       properties {
+            propZ = {getAttr = [l1, propA]}
+       }
+       requiredLocators = [l1]
+    }
+
+    DiscoveryNewL3VPN {
+       title = Enterprise to DC connectivity
+       description = An Enterprise NID attached to a DC network.
+       implements = tosca.resourceTypes.DemoL3VPN
+
+       resourceLocators {
+            endpoints {
+                 title = "Locator for endpoints"
+                 description = ""
+                 type = tosca.resourceTypes.CiscoEndpoint
+                 resourceLocator = {
+                 }
+                 forEach = {
+                     resourceNames = ["foo", {join = ["", "locator", {getCurrentIndex = foo}]}]
+                 }
+            }
+       }
+       parentLocator {
+            title = "My Parent"
+            description = ""
+            type = tosca.resourceTypes.TopLevelL3VPN
+            resourceLocator = {
+                label = "ToplevelService"
+            }
+       }
+       properties {
+            propB = {getAttr = [locator0, propD]}
+            propA = {join = ["-", {getAttr = [locator0, propD]}, {getAttr = [locator1, propC]}]}
+            propC = {getParam = propB}
+            propAA = {"insideObj1" = {getParam = propA}, "insideObj2" = {getAttr = [locator0, propD]}}
+       }
+       requiredLocators = [locator1]
+    }
+
+
+}

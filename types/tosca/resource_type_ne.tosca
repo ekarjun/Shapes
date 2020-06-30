@@ -1,0 +1,37 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Element resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the NetworkElement resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  RemoteAccessible = tosca.resourceTypes.RemoteAccessible
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  NetworkElement {
+    derivedFrom = RemoteAccessible
+    title = "Network Element (NE)"
+    description = """
+      A network element capable of performing networking functions.
+    """
+
+    properties {
+
+    }
+
+    capabilities {
+      ports {
+        title = "Ports"
+        description = "A network element has at least one port"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Port ]
+        minimum = 1 // without at least 1 port it would not be a useful NE
+      }
+    }
+
+  }
+}

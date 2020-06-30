@@ -1,0 +1,23 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Service resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Link resource type."
+authors     = [ "Darren Dowker (ddowker@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  NetworkService {
+    derivedFrom = Root
+    title = "Network Service"
+    description = """
+      Network Services including EVPLs, EPLs, Links, and E2DC connectivity.
+    """
+
+  }
+}

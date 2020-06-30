@@ -1,0 +1,136 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Deployment",
+        "children": [{
+            "model": "properties.domainId",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain to host this vCPE.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.deploymentLocation",
+            "label": "Deployment location",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "properties.zone",
+                    "labelAttribute": "properties.zone",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Hypervisor"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.keyName",
+            "label": "Key pair",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "label",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.KeyPair"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.firewallEnabled"
+        }, {
+            "model": "properties.encryptionEnabled"
+        }]
+    }, {
+        "label": "Network",
+        "children": [{
+            "model": "properties.uniNet",
+            "label": "UNI network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:uni",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.nniNet",
+            "label": "NNI network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:nni",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.publicNet",
+            "label": "Public network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.privateNet",
+            "label": "Private network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.localNet",
+            "label": "Local network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "p": "label:inter",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }]
+    }]
+}

@@ -1,0 +1,181 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "OpenStack VM resource type definition"
+package     = openstack
+version     = "1.0"
+description = "This document defines the OpenStack VirtualMachine resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Vm = tosca.resourceTypes.VirtualMachine
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VirtualMachine {
+    derivedFrom = Vm
+    title = "OpenStack Virtual Machine (VM)"
+    description = """
+      A virtual machine hosted on OpenStack hypervisor.
+    """
+
+    properties {
+
+      // The following three fields were in support of the vDNS application
+
+      securityGroups {
+        title = "Security Groups"
+        description = """
+          List of security groups used when accessing this VM.
+          If not specified, default security group on the OpenStack domain will be used.
+        """
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      userData {
+        title = "User Data"
+        description = "User data string passed into the VM during creation"
+        type = string
+        optional = true
+      }
+
+      publicNetwork {
+        title = "Public Network"
+        description = "The name of public network this VM will have a floating address on"
+        type = string
+        optional = true
+      }
+
+      image {
+        title = "Image"
+        description = "Image from which this VM will be created"
+        type = string
+        optional = true
+      }
+
+      keyPair {
+        title = "Key Pair"
+        description = "Key pair used to access this VM"
+        type = string
+        optional = true
+      }
+
+      networks {
+        title = "Networks"
+        description = "Networks this VM connects to"
+        type = array
+        optional = true
+        items {
+          type = object
+          properties = {
+            id {
+              title = "Network ID"
+              description = "ID of the Network to be connected to"
+              type = string
+            }
+
+            port {
+              title = "Port ID"
+              description = "ID of the Port to be connected to"
+              type = string
+              optional = true
+            }
+
+            fixedIpAddresses {
+              title = "Fixed IP Addresses"
+              description = "Fixed addresses to be assigned to the VM connecting to this network. The address will be auto-assigned if not specified"
+              optional = true
+              type = array
+              items.type = string
+            }
+
+            floatingIpNetworks {
+              title = "Floating IP Networks"
+              description = "External networks from which floating IP addresses will be assigned. No floating ip will be assigned if not specified"
+              type = array
+              optional = true
+              items.type = string
+            }
+
+            securityGroups {
+              title = "Security Groups"
+              description = """
+                Security groups to be used when accessing the VM through this network.
+                If not specified, the security groups configured at the VM level will be used.
+                If an empty array is specified, the default security group on the OpenStack domain will be used.
+              """
+              type = array
+              optional = true
+              items.type = string
+            }
+
+            securityEnabled {
+              title = "Security Enabled"
+              description = """
+                Specify whether security is enabled on this network. This is optional and should only
+                be specified when Neutron port security extension is enabled on the OpenStack server
+              """
+              type = boolean
+              optional = true
+            }
+
+          }
+        }
+      }
+
+      addresses {
+        title = "Addresses"
+        description = "Addresses assigned to this VM. This is an observed property."
+        config = false
+        type = array
+        items {
+          type = object
+          properties = {
+            networkId {
+              title = "Network ID"
+              description = "ID of the network the addresses are assigned on"
+              type = string
+            }
+
+            fixedIpAddresses {
+              title = "Fixed IP Addresses"
+              description = "Fixed addresses assigned to the VM connecting to this network"
+              type = array
+              items.type = string
+            }
+
+            floatingIpAddresses {
+              title = "Floating IP Addresses"
+              description = "Floating IP addresses assigned to the VM for connection to this network"
+              type = array
+              items.type = string
+            }
+          }
+        }
+      }
+
+      availabilityZone {
+        title = "Availability Zone"
+        description = "Availability Zone the VM is created on"
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+
+      contained {
+        title = "Hypervisor"
+        description = "A VM is contained in a hypervisor"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Hypervisor ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+}

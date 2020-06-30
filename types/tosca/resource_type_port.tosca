@@ -1,0 +1,32 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic port resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Port resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root // we only need this so that we can use the short version below
+}
+
+resourceTypes {
+
+  Port {
+    derivedFrom = Root
+    title = Port
+    description = """
+      Port resource.
+    """
+
+    properties {
+
+      name {
+        title = "Identifier"
+        description = "Port identifier"
+        type = string  // should be read-only
+        optional = true
+      }
+
+    }
+  }
+}

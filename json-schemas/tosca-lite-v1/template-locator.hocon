@@ -1,0 +1,56 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-locator#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite template locator"
+
+type        = object
+
+required    = [ type ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type = string
+    maxLength = 32
+  }
+
+  forEach {
+     description = """
+        Settings to be applied for each of the located resources.
+     """
+     type = object
+  }
+
+  description {
+    description = """
+      This is a more verbose description of the resource locator.
+    """
+    type = string
+  }
+
+  type {
+    description = "Refers to the resource type that of this resource"
+    type = string
+  }
+
+  resourceLocator.type = object // TODO: handle it better
+
+  processAfter {
+    description = """
+      Allows explicit ordering of discovered resource locators. If present, this string (or array of strings) is (are)
+      the name(s) of other locator(s) which need to be discovered before this resource is processed.
+    """
+    anyOf = [
+      { type = string }
+      { type = array
+        items = { type = string }
+      }
+    ]
+  }
+
+}
+
+additionalProperties = false

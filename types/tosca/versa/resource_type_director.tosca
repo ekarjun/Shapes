@@ -1,0 +1,71 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Director"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Director"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  Director {
+    derivedFrom = tosca.resourceTypes.VNFManager
+    title = "Versa Director"
+    description = """
+      This resource type represents a Versa Director.
+    """
+
+    properties {
+      accessUrl {
+        title = "Access URL"
+        description = "Access URL to this Versa Director"
+        type = string
+      }
+
+      subscriptionPlans {
+        title = "Subscription Plans"
+        description = "Subscription Plans on this Versa Director"
+        type = array
+        items.type = object
+      }
+
+      cmsConnectors {
+        title = "Cloud Management System Connectors"
+        description = "CMS Connectors on this Versa Director"
+        type = array
+        items.type = object
+      }
+
+      vcds {
+        title = "VMWare vCloud Directors"
+        description = "VMWare vCloud Directors connected to by this Versa Director"
+        type = array
+        items.type = object
+      }
+
+    }
+
+    requirements {
+      VDCs {
+        type = Endpoint
+        resourceTypes = [
+          tosca.resourceTypes.DataCenter
+        ]
+      }
+    }
+
+    capabilities {
+      host {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+          versa.resourceTypes.Customer
+        ]
+      }
+    }
+  }
+}

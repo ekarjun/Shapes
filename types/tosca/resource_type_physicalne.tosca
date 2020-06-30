@@ -1,0 +1,23 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Physical Network Element resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the PhysicalNetworkElement resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  NetworkElement = tosca.resourceTypes.NetworkElement
+  Physical = tosca.resourceTypes.Physical
+}
+
+resourceTypes {
+
+  PhysicalNetworkElement {
+    derivedFrom = [ NetworkElement, Physical ]
+    title = "Physical Network Element (NE)"
+    description = """
+      A physical network element capable of performing networking functions.
+    """
+
+  }
+}

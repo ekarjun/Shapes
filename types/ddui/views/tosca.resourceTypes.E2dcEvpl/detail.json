@@ -1,0 +1,79 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Enterprise",
+        "children": [{
+            "model": "properties.enterpriseProvider",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain for the Enterprise.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.enterpriseBwProfile",
+            "label": "A-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }, {
+            "model": "properties.enterpriseVlanId"
+        }, {
+            "model": "properties.enterprisePortId",
+            "label": "A-End port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Port"
+                    }
+                }
+            }
+        }]
+    }, {
+        "label": "Data center",
+        "children": [{
+            "model": "properties.dcProvider",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain for the Data Center.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.dcBwProfile",
+            "label": "Z-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }, {
+            "model": "properties.dcNetworkId",
+            "label": "Public network",
+            "placeholder": "Please select a Data Center network",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network"
+                    }
+                }
+            }
+        }]
+    }]
+}

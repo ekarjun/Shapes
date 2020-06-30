@@ -1,0 +1,125 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic server resource type definition"
+package     = tidvim
+version     = "1.0"
+description = "This document defines the Server resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  RemoteAccessible = tosca.resourceTypes.RemoteAccessible
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Server {
+    derivedFrom = [ RemoteAccessible, NetworkAttachable ]
+    abstract = true
+    title = Server
+    description = """
+      Server resource, which can be either virtual (VM) or physical (real iron server).
+    """
+
+    properties {
+
+      osArch {
+        title       = "OS Architecture"
+        description = "The host operating system (OS) architecture"
+        type        = string
+        enum        = [ "x86_32", "x86_64" ]
+        optional    = true
+      }
+
+      osType {
+        title       = "OS Type"
+        description = "The host operating system (OS) type"
+        type        = string
+        optional    = true
+      }
+
+      osDistribution {
+        title       = "OS Distribution"
+        description = "The host operating system (OS) distribution"
+        type        = string
+        optional    = true
+      }
+
+      osVersion {
+        title       = "OS Version"
+        description = "The host operating system (OS) distribution"
+        type        = string
+        optional    = true
+      }
+
+    }
+
+    capabilities {
+      host {
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.SoftwareComponent ]
+      }
+    }
+
+    resourceStates {
+
+//      building {
+//        title = Building
+//        description = "The resource is currently being built"
+//      }
+//
+      failed {
+        title = Failed
+        description = "The resource is failed (see reason property for further info)"
+      }
+
+      started {
+        title = Started
+        description = "The resource is running"
+      }
+
+      terminating {
+        title = Terminating
+        description = "The resource is being terminated"
+      }
+
+      stopped {
+        title = Stopped
+        description = "The resource has been stopped"
+      }
+
+      terminated {
+        title = Terminated
+        description = "The resource has been terminated"
+      }
+
+    }
+
+    interfaces {
+
+      stop {
+        title = Stop
+        description = "Stop this resource"
+        // TODO pre-requisites?
+      }
+
+      start {
+        title = Start
+        description = "Start this stopped resource"
+        // TODO pre-requisites?
+      }
+
+      terminate {
+        title = Terminate
+        description = "Terminate this resource"
+        // TODO pre-requisites?
+      }
+
+      reboot {
+        title = Reboot
+        description = "Reboot this resource"
+      }
+
+    }
+  }
+}

@@ -1,0 +1,114 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-resource#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite template resource"
+
+type        = object
+
+required    = [ type ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the property.
+      Think about the label next to a field in a UI form.
+    """
+    type = string
+    maxLength = 64
+  }
+
+  description {
+    description = """
+      This is a more verbose description of the property.
+      Think about the content of a help box or tooltip that shows up next to the property
+      in a UI form.
+    """
+    type = string
+  }
+
+  label {
+    description = """
+      User assigned identifier
+    """
+    anyOf = [
+      { type = object }
+      { type = string }
+    ]
+  }
+
+  // FIXME evolve to be a rich, but well constrained version of v4 schema, plus the needed extensions to support Yang richness
+  type {
+    description = "Refers to the resource type that of this resource"
+    type = string // TODO firm up type for model cross-references
+  }
+
+  product {
+    description = "Reference to the product id, which may be static, or a function"
+    anyOf = [
+      { type = string }
+      { type = object } // TODO clamp this to a yet-to-be introduced Json expression type
+    ]
+  }
+
+  createIf {
+    description = "If present, this boolean controls if a sub-resource is going to be created or not"
+    anyOf = [
+      { type = boolean }
+      { type = object } // TODO clamp this to a yet-to-be introduced Json expression type
+    ]
+  }
+
+  autoClean {
+    description = "If present, this boolean controls if the autoClean flag should be set on the resource"
+    type = boolean
+    default = false
+  }
+
+  activateAfter {
+    description = """
+      Allows explicit ordering of template resource activation. If present, this string (or array of strings) is (are)
+      the name(s) of other template resource(s) which need to be activated before this resource is activated.
+    """
+    anyOf = [
+      { type = string }
+      { type = array
+        items = { type = string }
+      }
+    ]
+  }
+
+  terminateBefore {
+    description = """
+      Allows explicit ordering of template resource termination. If present, this string (or array of strings) is (are)
+      the name(s) of other template resource(s) for which this resource's termination must precede.
+    """
+    anyOf = [
+      { type = string }
+      { type = array
+        items = { type = string }
+      }
+    ]
+  }
+
+  requirements {
+    description = "Declarative definition of the requirements that are to be managed for this service"
+    type = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-requirement#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  forEach {
+    description = "Used to declaratively create a variable number of sub-resources."
+    type = array
+  }
+
+  // TODO to be extended/restricted later
+  properties.type = object
+
+}
+
+additionalProperties = false

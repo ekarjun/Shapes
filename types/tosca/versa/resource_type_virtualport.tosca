@@ -1,0 +1,136 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual Port"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Virtual Port."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  EthernetPort = tosca.resourceTypes.EthernetPort
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  VirtualPort {
+    derivedFrom = EthernetPort
+    title = "Versa Virtual Port"
+    description = """
+      This resource type represents a Virtual Port in a Versa Appliance.
+    """
+
+    properties {
+
+      applianceName {
+        title = "Appliance Name"
+        description = "Appliance name of this virtual port"
+        type = string
+      }
+
+      hostPort {
+        title = "Host Port"
+        description = "The actual port on the host that supports this virtual port"
+        type = string
+        optional = true
+        config = false
+      }
+
+      mode {
+        title = "Interface Mode"
+        description = "Operation mode of this interface"
+        type = string
+        optional = true
+        enum = [
+          "input"
+          "output"
+          "ipsec"
+          "redundancy"
+        ]
+      }
+
+      parentPort {
+        title = "Parent Port"
+        description = "Parent Port ID of this virtual port"
+        type = string
+        optional = true
+      }
+
+      vlanId {
+        title = "VLAN ID"
+        description = "VLAN ID of this virtual port"
+        type = integer
+        minimum = 1
+        maximum = 4095
+        optional = true
+      }
+
+      unitId {
+        title = "Unit ID"
+        description = "Unit ID of this virtual port"
+        type = integer
+        minimum = 1
+        maximum = 4095
+        optional = true
+      }
+
+      customer {
+        title = "ID of the customer"
+        description = "ID of the customer this virtual port associate with"
+        type = string
+        optional = true
+        config = false
+      }
+    }
+
+    requirements {
+
+      parent {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.VirtualPort ]
+        minimum = 0
+      }
+
+      appliance {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.Appliance ]
+      }
+
+      members {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.VirtualPort ]
+        minimum = 0
+        maximum = 0
+      }
+    }
+
+    capabilities {
+
+      customer {
+        type = Endpoint
+        resourceTypes = [ versa.resourceTypes.Customer ]
+      }
+
+      virtualRouter {
+        type = Endpoint
+        resourceTypes = [ versa.resourceTypes.VirtualRouter ]
+      }
+
+      subPorts {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.VirtualPort ]
+      }
+
+      aggregate {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.VirtualPort ]
+      }
+
+      IpSecVpns {
+        type = Container
+        resourceTypes = [ versa.resourceTypes.IpSecVpn ]
+      }
+    }
+
+  }
+}

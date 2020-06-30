@@ -1,0 +1,210 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "IPSec VPN Service"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type IPSec VPN Service"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  IpSecVpn {
+    derivedFrom = Vnf
+    title = "Versa IPSec VPN"
+    description = """
+      This resource type represents a Versa IPSec VPN.
+    """
+
+    properties {
+
+      customer {
+        title = "Customer"
+        description = "Customer name of this IPSec VPN"
+        type = string
+      }
+
+      appliance {
+        title = "Appliance"
+        description = "Appliance name of this IPSec VPN"
+        type = string
+      }
+
+      vpn-type {
+        title = "VPN Type"
+        description = "Type of this IPSec VPN"
+        type = string
+        enum = [ "site-to-site" ]
+      }
+
+      local-auth-type {
+        title = "Authenticaiton Type"
+        description = "Local authentication type"
+        type = string
+        enum = [ "psk" ]
+      }
+
+      local-id-type {
+        title = "Authentication Identifier Type"
+        description = "Local authentication identifier type"
+        type = string
+        enum = [
+          "ip"
+          "email"
+        ]
+      }
+
+      local-key {
+        title = "Shared Key for Authentication"
+        description = "Shared Key for authentication"
+        type = string
+      }
+
+      local-id-string {
+        title = "Authentication Identifier String"
+        description = "Authentication identifier string"
+        type = string
+      }
+
+      local-endpoint {
+        title = "Local Endpoint IP Address"
+        description = "IP address for local endpoint of the IPSec VPN"
+        type = string
+        format = ipv4-address
+      }
+
+      peer-auth-type {
+        title = "Authenticaiton Type"
+        description = "Local authentication type"
+        type = string
+        enum = [ "psk" ]
+      }
+
+      peer-id-type {
+        title = "Authentication Identifier Type"
+        description = "Local authentication identifier type"
+        type = string
+        enum = [
+          "ip"
+          "email"
+        ]
+      }
+
+      peer-key {
+        title = "Shared Key for Authentication"
+        description = "Shared Key for authentication"
+        type = string
+      }
+
+      peer-id-string {
+        title = "Authentication Identifier String"
+        description = "Authentication identifier string"
+        type = string
+      }
+
+      peer-endpoint {
+        title = "Peer Endpoint IP Address"
+        description = "IP address for remote endpoint of the IPSec VPN"
+        type = string
+        format = ipv4-address
+      }
+
+      tunnel-interface {
+        title = "Tunnel Interface"
+        description = "Redundancy Tunnel (tvi) interface to be used for the IPSec VPN"
+        type = string
+      }
+
+      tunnel-initiate {
+        title = "Tunnel Initiation Mode"
+        description = "Tunnel initiation mode for the IPSec VPN"
+        type = string
+        enum = [
+          "automatic"
+          "traffic"
+        ]
+      }
+
+      routing-instance {
+        title = "Routing Instance"
+        description = "Routing instance this IPSec VPN belongs to"
+        type = string
+        optional = true
+      }
+
+      ipsec-encryption-hashing-algorithm {
+        title = "IPSec Encryption/Hashing Algorithm"
+        description = "Algorithm used for IPSec encryption and hashing"
+        type = string
+        enum = [
+          "esp-aes128-sha1"
+          "esp-aes128-md5"
+          "esp-aes256-sha1"
+          "esp-aes256-md5"
+          "esp-aes128-ctr-sha1"
+          "esp-aes128-ctr-xcbc"
+          "esp-aes128-gcm"
+          "esp-aes256-gcm"
+        ]
+      }
+
+      ike-version {
+        title = "IKE Version"
+        description = "Version of IKE used for the IPSec VPN"
+        type = string
+        enum = [
+          "v1"
+          "v2"
+        ]
+      }
+
+      ike-dh-group {
+        title = "IKE DH Group"
+        description = "Diffie-Hellman Group used for the IKE"
+        type = string
+        enum = [
+          "Diffie-Hellman Group 1 - 768-bit modulus"
+          "Diffie-Hellman Group 2 - 1024-bit modulus"
+          "Diffie-Hellman Group 5 - 1536-bit modulus"
+        ]
+      }
+
+      ike-encryption-hashing-algorithm {
+        title = "IKE Encryption/Hashing Algorithm"
+        description = "Algorithm used for encryption and hashing for IKE"
+        type = string
+        enum = [
+          "aes128-sha1"
+          "aes128-md5"
+          "aes256-sha1"
+          "aes256-md5"
+        ]
+      }
+
+    }
+
+    requirements {
+      appliance {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+      customer {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Customer
+        ]
+      }
+      tunnel {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.VirtualPort
+        ]
+      }
+    }
+  }
+}

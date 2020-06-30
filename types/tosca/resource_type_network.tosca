@@ -1,0 +1,35 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Generic Network resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Network resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  Network {
+    derivedFrom = Root
+    title = "Network"
+    description = """
+      A generic network resource type representing connectivity at some or multiple network layers.
+    """
+
+    capabilities {
+
+      attachments {
+        title = Attachments
+        description = """
+          For relationships to express that something is attached to this network.
+        """
+        type = Endpoint
+        resourceTypes = [ NetworkAttachable ]
+      }
+    }
+  }
+}

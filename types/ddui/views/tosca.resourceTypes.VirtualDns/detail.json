@@ -1,0 +1,121 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Deployment",
+        "children": [{
+            "model": "properties.domainId",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain to host this vDNS.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.templateUrlDir",
+            "label": "SW download server",
+            "description": "Please enter the download server URL for vDNS EMS software (http://10.70.162.8:9090/vcm_orch)."
+        }, {
+            "model": "properties.keyName",
+            "label": "Key pair",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "label",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.KeyPair"
+                    }
+                }
+            }
+        }]
+    }, {
+        "label": "DNS",
+        "children": [{
+            "model": "properties.externalDnsServer",
+            "transforms": {
+                "write": [{
+                    "from": "\n",
+                    "to": ",",
+                    "global": true
+                }],
+                "read": [{
+                    "from": ",",
+                    "to": "\n",
+                    "global": true
+                }]
+            }
+        }, {
+            "model": "properties.domain",
+            "transforms": {
+                "write": [{
+                    "from": "\n",
+                    "to": ",",
+                    "global": true
+                }],
+                "read": [{
+                    "from": ",",
+                    "to": "\n",
+                    "global": true
+                }]
+            }
+        }, {
+            "model": "properties.records",
+            "transforms": {
+                "write": [{
+                    "from": "\n",
+                    "to": ",",
+                    "global": true
+                }],
+                "read": [{
+                    "from": ",",
+                    "to": "\n",
+                    "global": true
+                }]
+            }
+        }]
+    }, {
+        "label": "Network",
+        "children": [{
+            "model": "properties.publicNet",
+            "label": "Public network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.privateNet",
+            "label": "Private network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./domainId}"
+                    }
+                }
+            }
+        }]
+    }]
+}

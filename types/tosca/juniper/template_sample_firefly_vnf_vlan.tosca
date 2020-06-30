@@ -1,0 +1,114 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a Juniper Firefly VNF server connected VLAN networks"
+package     = juniper
+version     = "1.0"
+description = """
+Implements: FireflyVnfVlan
+This implementation is based on a VM and a few additional OpenStack resources.
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  FireflyVnfVlan = juniper.resourceTypes.FireflyVnfVlan
+  FireflyVnf = juniper.resourceTypes.FireflyVnf
+  Network = tosca.resourceTypes.EthernetNetwork
+  Subnet = tosca.resourceTypes.Subnet
+}
+
+serviceTemplates {
+
+  FireflyVnfVlan {
+    title = Firefly Appliance (VNF)
+    description = A Firefly server deployed as a VNF creating new networks and VLANs
+    implements = FireflyVnfVlan
+
+    // Inherent properties from the implemented FireflyVnfVlan type:
+    // - flavorVmProduct
+    // - image
+    // - keyPair
+    // - securityGroup
+    // - privateNet
+    // - publicNet
+    // - ge-001-VlanId
+    // - ge-001-Prefix
+    // - ge-002-VlanId
+    // - ge-002-Prefix
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      ge-001-Net {
+        type = Network
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           networkType = vlan
+           external = false
+           physicalNetwork = "physnet3"
+           segmentationId = {getParam = ge-001-VlanId}
+        }
+      }
+
+      ge-001-Subnet {
+        type = Subnet
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           ipVersion = IPv4
+           dhcpEnabled = false
+           prefix = {getParam = ge-001-Prefix}
+           network = {getResourceId = ge-001-Net}
+        }
+        terminateBefore = [ ge-001-Net ]
+      }
+
+      ge-002-Net {
+        type = Network
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           networkType = vlan
+           external = false
+           physicalNetwork = "physnet4"
+           segmentationId = {getParam = ge-002-VlanId}
+        }
+      }
+
+      ge-002-Subnet {
+        type = Subnet
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           ipVersion = IPv4
+           dhcpEnabled = false
+           prefix = {getParam = ge-002-Prefix}
+           network = {getResourceId = ge-002-Net}
+        }
+        terminateBefore = [ ge-002-Net ]
+      }
+
+      vnf {
+        type = FireflyVnf
+        properties {
+           flavorVmProduct = {getParam = flavorVmProduct}
+           image = {getParam = image}
+           keyPair = {getParam = keyPair}
+           securityGroup = {getParam = securityGroup}
+           privateNet = {getParam = privateNet}
+           publicNet = {getParam = publicNet}
+           ge-001-Net = {getResourceId = ge-001-Net}
+           ge-002-Net = {getResourceId = ge-002-Net}
+        }
+        activateAfter = [ ge-001-Subnet, ge-002-Subnet ]
+        terminateBefore = [ ge-001-Subnet, ge-002-Subnet ]
+      }
+    }
+
+    output = {
+      ge-001-IpAddr  = {getAttr = [vnf, ge-001-IpAddr]}
+      ge-002-IpAddr  = {getAttr = [vnf, ge-002-IpAddr]}
+      floatingIpAddr = {getAttr = [vnf, floatingIpAddr]}
+    }
+  }
+}

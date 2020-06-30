@@ -1,0 +1,60 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/relationship-type#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Relationship Type"
+type        = object
+required    = [ title, description ]
+
+properties {
+
+  title {
+    description = "Brief title of relationship type"
+    type        = string
+  }
+
+  description {
+    description = "Description of the relationship type"
+    type        = string
+  }
+
+  derivedFrom {
+    description = "Package path(s) to the relationship type(s) from which this relationship type is derived from"
+    oneOf = [
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+      },
+      {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPathArray"
+      }
+    ]
+  }
+
+  properties {
+    description = "Optional properties of this capability type"
+    type        = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  validSource {
+    "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    description = """
+    Constrains the sources of relationship instances of this type. The source must expose a requirement of the
+    Capability Type referenced by this attribute.
+    """
+  }
+
+  validTarget {
+    "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+    description = """
+    Constrains the targets of relationship instances of this type. The target must expose a capability of the
+    Capability Type referenced by this attribute.
+    """
+  }
+
+}
+
+additionalProperties = false

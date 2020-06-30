@@ -1,0 +1,79 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet port resource type definition"
+package     = tidvim
+version     = "1.0"
+description = "This document defines the EthernetPort resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)", "Torin Sandall (tsandall@cyaninc.com)"  ]
+
+imports {
+  Port = tosca.resourceTypes.Port
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EthernetPort {
+    derivedFrom = Port
+    title = Ethernet Port
+    description = """
+      Ethernet Port resource.
+    """
+
+    properties {
+
+      macAddresses {
+        title       = "Mac Addresses of Ethernet Port"
+        description = "Mac Addresses of this Ethernet port"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      bandwidth {
+        title = "Bandwidth"
+        description = "Expected bandwidth of Ethernet Port"
+        type = string
+        optional = true
+      }
+
+      bindingVlan {
+        title = "Binding VLAN"
+        description = "Informative physical connection"
+        type = integer
+        optional = true
+      }
+
+      bindingSwitchPort {
+        title = "Binding Switch Port"
+        description = "Informative physical connection"
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+
+      host {
+        title = "Network"
+        description = "An Ethernet port is hosted by an Ethernet network"
+        type = Container
+        resourceTypes = [ tidvim.resourceTypes.EthernetNetwork ]
+        maximum = 1
+      }
+
+    }
+
+    capabilities {
+
+      access {
+        title = "Server"
+        description = "An Ethernet port provides network access to a Server"
+        type = Container
+        resourceTypes = [ tidvim.resourceTypes.Server ]
+        maximum = 1
+      }
+    }
+
+  }
+}

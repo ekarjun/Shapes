@@ -1,0 +1,70 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet Virtual Circuit end-point resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the EvcEndPoint resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  EndPoint = tosca.resourceTypes.EndPoint
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EvcEndPoint {
+    derivedFrom = EndPoint
+    title = "EVC End Point"
+    description = """
+      Ethernet Virtual Circuit end-point resource.
+    """
+
+    properties {
+
+      portName {
+        title = "Port Name"
+        description = "Name of port this end-point connects to"
+        type = string
+      }
+
+      bwProfile {
+        title = "Bandwidth Profile"
+        description = "Bandwidth profile"
+        type = string
+      }
+
+      monitored {
+        title = "Monitored?"
+        description = "Indicated if this end-point is (to be) monitored."
+        type = boolean
+        optional = true
+        default = false
+      }
+
+    }
+
+    requirements {
+
+      port {
+        title = "Port"
+        description = "The port which this end-point is attached to"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.UniPort ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      terminate {
+        title = "Link"
+        description = "An EVC endpoint terminates a Link (EPL or EVPL for now)"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Link ]  // should be a superclass to allow EVLANs later
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "VLAN pool resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VLAN pool resource type."
+authors     = [ "Darren Dowker (ddowker@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VlanPool {
+    derivedFrom = Root
+    title = "VLAN Pool"
+    description = """
+      VLAN Pool resource.
+    """
+
+    properties {
+
+      pool {
+        title = "VLAN pool"
+        description = "Pool of allocated VLANs"
+        type = array
+        items.type = string // TODO: should be integer when MarketModel supports array of integers
+        //minimum = 1
+        //maximum = 4095
+      }
+
+    }
+
+    capabilities {
+
+      allocates {
+        title = "VLAN devices"
+        description = "A VLAN pool tracks allocation of VLANs for devices"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.L2Gateway ]
+      }
+    }
+  }
+}

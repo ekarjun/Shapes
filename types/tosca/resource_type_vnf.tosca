@@ -1,0 +1,30 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual Network Function resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VirtualNetworkFunction resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VirtualNetworkFunction {
+    derivedFrom = Root
+    abstract = true
+    title = "VNF"
+    description = """
+      Individual Virtualized Network Functions, including Firewalls, EMSs, Virtual Router, and Virtual DNS.
+    """
+
+    properties {
+    }
+
+    capabilities {
+    }
+
+  }
+}

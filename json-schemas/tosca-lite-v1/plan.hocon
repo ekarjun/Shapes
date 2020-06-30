@@ -1,0 +1,48 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/plan#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite template plan"
+
+type        = object
+
+required    = [ type, language, path ]
+
+properties {
+
+  description {
+    description = """
+      This is a more verbose description of the property.
+      Think about the content of a help box or tooltip that shows up next to the property
+      in a UI form.
+    """
+    type        = string
+  }
+
+  type {
+    description = "Defines how the plan is specified"
+    type = string
+    enum = [ "remote", "script" ] // other will be added later
+  }
+
+  language {
+    description = "Programming language of the executed script"
+    type = string
+    enum = [ "python" ]
+  }
+
+  path {
+    description = "Relative path of Source code in the model_definitions tree"
+    type = string
+  }
+
+  autoClearDifferences {
+    description = """
+    Indicates whether 'differences' on host resource should be cleared automatically after the plan has been
+    successfully executed. This flag only applies to 'update' plans.
+    """
+    type = boolean
+    default = true
+  }
+
+}
+
+additionalProperties = false

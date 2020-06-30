@@ -1,0 +1,22 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/alarm-type#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Alarm Type"
+
+type        = object
+
+properties {
+
+  title.type = string
+
+  description.type = string
+
+  derivedFrom.type = string
+
+  properties {
+    type = object
+    // TODO add more constraints
+  }
+// TODO define what makes up a resource type
+}
+
+additionalProperties = false

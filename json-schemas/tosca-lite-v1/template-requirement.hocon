@@ -1,0 +1,55 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/template-requirement#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite template requirements"
+
+type        = object
+
+required    = [ resource, relationship ]
+
+properties {
+
+  title {
+    description = """
+      Brief human friendly title for the requirement.
+      Think about the label next to a field in a UI form.
+    """
+    type = string
+    maxLength = 64
+  }
+
+  description {
+    description = """
+      This is a more verbose description of the requirement.
+      Think about the content of a help box or tooltip that shows up next to the property
+      in a UI form.
+    """
+    type = string
+  }
+
+  resource {
+    description = "The target resource instance that satisfies the requirement"
+    anyOf = [
+      { type = string }
+      { type = object }
+    ]
+  }
+
+  relationship {
+    description = "Refers to the desired relationship type for this requirement"
+    anyOf = [
+      { type = string }
+      { type = object }
+    ]
+  }
+
+  capability {
+    description = "Optional capability name on the resource to use"
+    anyOf = [
+      { type = string }
+      { type = object }
+    ]
+  }
+
+}
+
+additionalProperties = false

@@ -1,0 +1,111 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly VNF resource type definition"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Firefly VNF resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  FireflyVnf {
+    derivedFrom = Vnf
+    title = Firefly Appliance (VNF)
+    description = """
+      VNF resource holding Juniper Firefly type of VNF connecting to existing networks.
+    """
+
+    properties {
+    
+      vnfDomainId {
+        title = "VNF Domain ID"
+        description = "OpenStack Domain for the Firefly VNF"
+        type = string
+        optional = true
+      }
+
+      flavorVmProduct {
+        title = "Flavor"
+        description = "Flavor with which this Firefly VNF will be created"
+        type = string
+      }
+
+      image {
+        title = "Image"
+        description = "Image from which this Firefly VNF will be created"
+        type = string
+      }
+
+      keyPair {
+        title = "Key Pair"
+        description = "Key pair used to access this Firefly VNF"
+        type = string
+      }
+
+      securityGroup {
+        title = "Security Group"
+        description = "Security group controlling access to this Firefly VNF"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network for the Firefly VNF management interface"
+        type = string
+      }
+
+      publicNet {
+        title = "Public Network"
+        description = "UUID of the public network for the Firefly VNF management interface"
+        type = string
+      }
+
+      ge-001-Net {
+        title = "ge-0/0/1 Network"
+        description = "UUID of the network for the Firefly VNF ge-0/0/1 interface"
+        type = string
+      }
+
+      ge-002-Net {
+        title = "ge-0/0/2 Network"
+        description = "UUID of the network for the Firefly VNF ge-0/0/2 interface"
+        type = string
+      }
+
+      floatingIpAddr {
+        title = "Floating IP Address"
+        description = "Management network interface IP address assigned"
+        type = string
+        output = true
+      }
+
+      ge-001-IpAddr {
+        title = "ge-0/0/1 IP Address"
+        description = "ge-0/0/1 network interface IP address assigned"
+        type = string
+        output = true
+      }
+
+      ge-002-IpAddr {
+        title = "ge-0/0/2 IP Address"
+        description = "ge-0/0/2 network interface IP address assigned"
+        type = string
+        output = true
+      }
+
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+    }
+
+  }
+}

@@ -1,0 +1,142 @@
+"$schema" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title = "Experimental equipment holder resource type definition"
+package = tosca
+version = "1.0"
+description = "This document defines the base equipment holder type."
+authors = ["Kerry Neef (kerry.neef@cyaninc.com)"]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EquipmentHolder {
+    derivedFrom = Root
+    title = "Equipment Holder"
+    description = """
+    A device resource capable of holding equipment, e.g. a slot, sub-slot, etc.
+    """
+
+    properties {
+
+      device {
+        type = string
+        title = "Device"
+        description = "Identifies the device containing the resource."
+        optional = false
+        config = false
+      }
+
+      id {
+        type = string
+        title = "Equipment holder identifier"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      name {
+        type = string
+        title = "Interface Name"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      userLabel {
+        type = string
+        title = "User Label"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      owner {
+        type = string
+        title = "Owner"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      alarmReportingIndicator {
+        type = boolean
+        title = "Alarm Reporting Indicator"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      containingEquipment {
+        type = string
+        title = "Containing Equipment"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      holderType {
+        type = string
+        title = "Equipment Holder Type"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      acceptableEquipmentTypeList {
+        type = array
+        items.type = string
+        title = "Acceptable Equipment Type List"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      expectedOrInstalledEquipment {
+        type = string
+        title = "Expected Or Installed Equipment"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      holderState {
+        type = string
+        title = "Holder State"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      alarmStatus {
+        type = string
+        title = "Alarm Status"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      nativeEMSName {
+        type = string
+        title = "Native EMS Name"
+        description = ""
+        optional = true
+        config = false
+      }
+    }
+
+    requirements {
+
+      contained {
+        title = "Device"
+        description = "Equipment holders are contained by a device."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Device ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

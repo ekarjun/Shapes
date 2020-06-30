@@ -1,0 +1,45 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "IP VPN Service"
+package     = versa
+version     = "1.0"
+description = "This document defines the IP VPN service as a resource type and a service template"
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+}
+
+serviceTemplates {
+
+  IpVpnService {
+
+    title = "IP VPN"
+    description = "Implementation template for the service"
+    implements = tosca.resourceTypes.IpVpnService
+
+    plans {
+
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_activate.py"
+      }
+
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_terminate.py"
+      }
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/versa/ip_vpn_update.py"
+      }
+
+    }
+  }
+}

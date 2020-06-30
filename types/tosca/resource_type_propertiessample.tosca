@@ -1,0 +1,611 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Resource type definition for sample properties"
+package     = tosca
+version     = "1.0"
+description = "This document defines a resource type for sample properties."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  PropertiesSample {
+    derivedFrom = Root
+    title = "Properties Sample"
+    description = """
+      Sample for all types supported in properties.
+    """
+
+    properties {
+      myString {
+        title = "String property"
+        description = "A string property"
+        type = string
+        updatable = true
+      }
+
+      myFullTextSearchableString {
+        title = "String property with fulltext enabled"
+        description = "A fulltext searchable string property"
+        type = string
+        fulltext = true
+        optional = true
+        updatable = true
+      }
+
+      myStringArray {
+        title = "String array property"
+        description = "A string array property"
+        type = array
+        items.type = string
+        updatable = true
+      }
+
+      myInt {
+        title = "Integer property"
+        description = "A integer property"
+        type = integer
+        updatable = true
+        default = 1
+      }
+
+      myIntArray {
+        title = "Integer array property"
+        description = "An integer array property"
+        type = array
+        items.type = integer
+        updatable = true
+      }
+
+      myFloat {
+        title = "Float property"
+        description = "A float property"
+        type = number
+        updatable = true
+      }
+
+      myFloatArray {
+        title = "Float array property"
+        description = "A float array property"
+        type = array
+        items.type = number
+        updatable = true
+      }
+
+      myBoolean {
+        title = "Boolean property"
+        description = "A boolean property"
+        type = boolean
+        updatable = true
+        default = true
+      }
+
+      myBooleanArray {
+        title = "Boolean array property"
+        description = "A boolean array property"
+        type = array
+        items.type = boolean
+        updatable = true
+      }
+
+      myObject {
+        title = "Object property"
+        description = "An object property"
+        type = object
+        updatable = true
+      }
+
+      myObjectArray {
+        title = "String array property"
+        description = "A object array property"
+        type = array
+        items.type = object
+        updatable = true
+      }
+
+      myOptionalObject {
+        title = "My Optional Object"
+        description = "An optional object property"
+        type = object
+        optional = true
+        properties {
+          subProperty {
+            title = "Sub Property"
+            description = "A sub property of an optional object"
+            type = string
+          }
+        }
+      }
+
+      myDefaultObject {
+        title = "My Default Object"
+        description = "A object property with a default value"
+        type = object
+        default {
+          subProperty = "hello"
+        }
+        properties {
+          subProperty {
+            title = "Sub Property"
+            description = "A sub property of an object with a default"
+            type = string
+          }
+        }
+      }
+
+      myArrayOfObjectsOfArrays {
+        type = array
+        title = "My Array of Objects of Arrays of Objects"
+        description = "A complex case of nested arrays and objects"
+        items.type = object
+        items.properties {
+          subProperty {
+            type = array
+            title = "Sub Property"
+            items.type = object
+            items.properties {
+              subSubProperty {
+                type = string
+                format = ipv4-prefix
+                title = "Sub-sub Property"
+                output = true
+              }
+              subSubProperty2 {
+                type = string
+                format = ipv4-prefix
+                title = "Sub-sub Property2"
+                optional = true
+              }
+              subSubProperty3 {
+                type = string
+                format = ipv4-prefix
+                title = "Sub-sub Property3"
+                optional = true
+              }
+            }
+          }
+        }
+      }
+
+      mySchemalessArray {
+        type = array
+        optional = true
+        title = "Array with no schema"
+        description = "Array with no schema"
+      }
+
+      my4DSchemalessArray {
+        type = array
+        optional = true
+        title = "4D Array with no schema"
+        description = "Because"
+        items {
+          type = array
+          items {
+            type = array
+            items {
+              type = array
+            }
+          }
+        }
+      }
+
+      my2DObjectArray {
+        type = array
+        optional = true
+        items {
+          type = array
+          items {
+            type = object
+          }
+        }
+        title = "Array of arrays"
+        description = "Array of arrays with objects"
+      }
+
+      myObfuscatedString {
+        type = string
+        optional = true
+        updatable = true
+        title = "obfuscated string field"
+        description = "An optional field to test obfuscation with"
+        obfuscate = true
+      }
+
+      internalObject {
+        type = array
+        optional = true
+        updatable = true
+        title = "A place for stars"
+        items {
+          type = object
+          optional = true
+          updatable = true
+          properties {
+            intentionalStars {
+              type = string
+              optional = true
+              updatable = true
+            }
+          }
+        }
+      }
+
+      myLengthRestrictedString {
+        title = "LengthRestricted"
+        description = "A string whose length is restricted by lengthMatcher"
+        type = string
+        updatable = true
+        optional = true
+        lengthMatcher = ["0..2", "5", "7..9"]
+      }
+
+      myObjectWithLengthRestriction {
+        title = "ObjectWithLengthRestriction"
+        description = "An object with a length restricted string field"
+        type = object
+        updatable = true
+        optional = true
+        properties {
+          lengthRestrictedString {
+            title = "objectRestrictedString"
+            description = "A length restricted string"
+            type = string
+            updatable = true
+            optional = true
+            lengthMatcher = ["7","10..20"]
+          }
+        }
+      }
+
+      myArrayWithLengthRestriction {
+        title = "ArrayWithLengthRestriction"
+        description = "A primitive array of length restricted strings"
+        type = array
+        updatable = true
+        optional = true
+        items {
+          type = string
+          lengthMatcher = ["5"]
+        }
+      }
+
+      myArrayWithItemRestriction {
+        title = "An array with item min max"
+        description = "array with item min max applied to item count"
+        type = array
+        updatable = true
+        optional = true
+        minItems = 2
+        maxItems = 5
+        items {
+          type = string
+        }
+      }
+
+     myNestedObjectWithItemRestrictedArray {
+        title = "An object with min item array"
+        description = "object with min item array prop"
+        type = object
+        updatable = true
+        optional = true
+        properties {
+          innerArray {
+            type = array
+            minItems = 5
+            items {
+              type = string
+            }
+          }
+        }
+     }
+
+     myNestedArrayOfObjectWithItemRestrictedArray {
+       title = "A nested array with item restriction"
+       description = "A nested array of object with item restricted array prop"
+       type = array
+       updatable = true
+       optional = true
+       items {
+         type = object
+         properties = {
+           innerArray {
+             type = array
+             maxItems = 2
+             items = {
+               type = string
+             }
+           }
+         }
+       }
+     }
+
+     myNestedArrayOfArrayWithMinItemRestriction {
+       title = "A nested array of array with restriction"
+       description = "A nested array of array with min item restriction"
+       type = array
+       updatable = true
+       optional = true
+       items {
+         type = array
+         minItems = 5
+         items = {
+           type = string
+         }
+       }
+     }
+
+      myMultipleRestrictedStrings {
+        title = "MultipleRegexRestricted"
+        description = "An array containing multiple regex patterns to match against"
+        type = string
+        updatable = true
+        optional = true
+        patternMatcher = ["[a-z]+$", "[A-Z]+$"]
+      }
+
+      myObjectWithRestrictedString {
+        title = "ObjectWithRegex"
+        description = "An object with a regex restricted string field"
+        type = object
+        updatable = true
+        optional = true
+        properties {
+          restrictedString {
+            title = "objectRestrictedString"
+            description = "A regex restricted string"
+            type = string
+            updatable = true
+            optional = true
+            patternMatcher = ["^[a-z]+", "[A-Z]*$"]
+          }
+        }
+      }
+
+      myObjectArrayWithRestrictedString {
+        title = "ArrayOfObjectWithRegex"
+        description = "Array of object with a restricted regex pattern"
+        type = array
+        updatable = true
+        optional = true
+        items {
+          type = object
+          updatable = true
+          optional = true
+          properties {
+            restrictedString {
+              type = string
+              updatable = true
+              optional = true
+              patternMatcher = ["^[a-z]+", "[A-Z]*$"]
+            }
+          }
+        }
+      }
+
+      myNullType {
+        title = "test"
+        description = "test"
+        type = "null"
+        updatable = true
+        optional = true
+      }
+
+      myObjectWithNestedPresence {
+        title = "ObjectWithNestedPresence"
+        description = "Object prop containing nested object with presence"
+        type = object
+        updatable = true
+        optional = true
+        properties {
+          nestedOptionalObject {
+            type = object
+            optional = true
+            updatable = true
+            presence = "Nested optional object with presence"
+          }
+        }
+      }
+
+      myArrayWithUniqueItemRestriction {
+        title = "An array with item min max"
+        description = "array with item min max applied to item count"
+        type = array
+        uniqueItems = true
+        updatable = true
+        optional = true
+        items {
+          type = string
+        }
+      }
+
+      myNestedArrayWithUniqueItem {
+        title = "An array with item min max"
+        description = "array with item min max applied to item count"
+        type = object
+        updatable = true
+        optional = true
+        properties {
+          innerArray {
+            title = "innerArray"
+            description = "An inner array of ints with uniqueItems restriction"
+            type = array
+            optional = true
+            uniqueItems = true
+            items {
+              type = integer
+            }
+          }
+          secondInnerArray {
+            title = "Nested inner array"
+            description = "An inner array containing a nested array of unique items"
+            optional = true
+            type = array
+            uniqueItems = true
+            items {
+              type = array
+              optional = true
+              uniqueItems = true
+              items {
+                type = integer
+              }
+            }
+          }
+          thirdInnerArray {
+            title = "Nested array of objects"
+            description = "A nested array to test the uniquness of objects within an array"
+            type = array
+            optional = true
+            updatable = true
+            uniqueItems = true
+            items {
+              type = object
+              optional = true
+              updatable = true
+            }
+          }
+        }
+      }
+
+      myUnionProperty {
+        title = "Example union of two different types"
+        description = "Union of a string and integer, with formats, enums, patterns, defaults"
+        union = [
+          {
+            type = string
+            format = ipv4-address
+            enum = ["192.168.0.1", "192.168.0.2"]
+            patternMatcher = ["192.168.0*"]
+          },
+          {
+            type = integer
+            format = uint32
+            enum = [1, 2]
+          }
+        ]
+        optional = true
+        updatable = true
+      }
+
+      myNestedUnionProperty {
+        title = "Example union of different types as object children"
+        description = "Union of an ipv4 and ipv6 address both restricted to certain prefixes"
+        type = object
+        properties {
+          ip-address {
+            union = [
+              {
+                type = string
+                format = ipv4-address
+                patternMatcher = ["192.168.0.*"]
+              },
+              {
+                type = string
+                format = ipv6-address
+                patternMatcher = ["2001::*"]
+              }
+            ]
+            updatable = true
+            optional = true
+          }
+        }
+        optional = true
+        updatable = true
+      }
+
+      myObjectArrayOfUnionsProperty {
+        title = "Example union of different types in an array of objects"
+        description = "Union of an ipv4 and ipv6 address both restricted to certain prefixes"
+        type = object
+        properties {
+          ip-addresses {
+            type = array
+            items {
+              type = object
+              properties {
+                ip-address {
+                  union = [
+                    {
+                      type = string
+                      format = ipv4-address
+                      patternMatcher = ["192.168.0.*"]
+                    },
+                    {
+                      type = string
+                      format = ipv6-address
+                      patternMatcher = ["2001::*"]
+                    }
+                  ]
+                  updatable = true
+                  optional = false
+                }
+              }
+            }
+            updatable = true
+            optional = true
+          }
+        }
+        optional = true
+        updatable = true
+      }
+
+      myKeyedObjectArray {
+        type = array
+        optional = true
+        updatable = true
+        title = "Object array with a single key field"
+        description = "Object array with a single key field"
+        items {
+          type = object
+          key = "myKey"
+          properties {
+            myKey {
+              type = string
+              updatable = true
+            }
+            myValue {
+              type = string
+              updatable = true
+              optional = true
+            }
+            myNestedArray {
+              type = array
+              optional = true
+              updatable = true
+              items {
+                type = object
+                updatable = true
+                key = ["key1", "key2", "key3"]
+                properties {
+                  key1 {
+                    type = integer
+                    updatable = true
+                    title = "integer key"
+                  }
+                  key2 {
+                    type = string
+                    updatable = true
+                    title = "string key"
+                  }
+                  key3 {
+                    type = boolean
+                    updatable = true
+                    title = "boolean key"
+                  }
+                  value1 {
+                    type = string
+                    updatable = true
+                    title = "a value field"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

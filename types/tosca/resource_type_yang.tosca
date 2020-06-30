@@ -1,0 +1,497 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Resource type definition for yang properties"
+package     = tosca
+version     = "1.0"
+description = "This document defines a resource type for yang properties."
+authors     = [ "Bob Thunelius(rthuneli@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+
+  YangWhenBasicTypes {
+    derivedFrom = Root
+    title = "WhenBasicTypes"
+    description = """
+      Yang Test Resource for basic types with 'when' condition
+    """
+    properties {
+      whenForIntType {
+        type = integer
+        when = "../intType > 5"
+        optional = true
+        updatable = true
+      }
+      whenForStringType {
+        type = integer
+        when = "../stringType = 'hello'"
+        optional = true
+        updatable = true
+      }
+      whenForBoolType {
+        type = integer
+        when = "../boolType = 'true'"
+        optional = true
+        updatable = true
+      }
+      intType {
+        type = integer
+        optional = true
+        updatable = true
+      }
+      stringType {
+        type = string
+        optional = true
+        updatable = true
+      }
+      boolType {
+        type = boolean
+        optional = true
+        updatable = true
+      }
+    }
+  }
+
+  YangWhenDefaultFalse {
+    derivedFrom = Root
+    title = "WhenDefaultFalse"
+    description = """
+      Yang Test resource using default which will cause 'when' to evaluate to false
+    """
+    properties {
+      dependentField {
+        type = integer
+        updatable = true
+        default = 2
+      }
+      dependsOnField {
+        type = integer
+        updatable = true
+        optional = true
+        when = "../dependentField > 10"
+      }
+      otherField {
+        type = integer
+        updatable = true
+        optional = true
+      }
+    }
+  }
+
+  YangWhenDefaultTrue {
+    derivedFrom = Root
+    title = "WhenDefaultTrue"
+    description = """
+      Yang Test resource using default which will cause 'when' to evaluate to true
+    """
+    properties {
+      dependentField {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      dependsOnField {
+        type = integer
+        updatable = true
+        optional = true
+        when = "../dependentField > 10"
+        }
+      otherField {
+        type = integer
+        updatable = true
+        optional = true
+      }
+    }
+  }
+
+  YangWhenObjectStructure {
+    derivedFrom = Root
+    title = "WhenObjectStructure"
+    description = """
+      Yang Resource with 'when' nested within an object structure, default is true
+    """
+    properties {
+      dependentField {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      objectType {
+        type = object
+        optional = true
+        updatable = true
+        properties {
+          dependsOnField {
+            type = integer
+            updatable = true
+            optional = true
+            when = "../../dependentField > 10"
+          }
+        }
+      }
+    }
+  }
+
+  YangWhenArrayStructure {
+    derivedFrom = Root
+    title = "WhenArraytStructure"
+    description = """
+      Yang Resource with compound 'when' nested within an array structure, default is true
+    """
+    properties {
+      dependentField1 {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      dependentField2 {
+        type = string
+        updatable = true
+        default = "valid"
+      }
+      arrayType {
+        type = array
+        optional = true
+        updatable = true
+        when = "/properties/dependentField1 > 2 * 5 and ../dependentField2 = 'valid'"
+        items {
+          type = object
+          updatable = true
+          optional = true
+          properties {
+            integerField {
+              type = integer
+              optional = true
+              updatable = true
+            }
+          }
+        }
+      }
+    }
+  }
+
+  YangArrayStructureWithElementWhen {
+    derivedFrom = Root
+    title = "WhenArraytStructure"
+    description = """
+      Yang Resource with 'when' defined within an array structure
+    """
+    properties {
+      dependentField {
+        type = integer
+        optional = true
+        updatable = true
+      }
+      arrayType {
+        type = array
+        optional = true
+        updatable = true
+        items {
+          type = object
+          updatable = true
+          optional = true
+          properties {
+            integerField {
+              type = integer
+              optional = true
+              updatable = true
+            }
+            integerWithWhenField {
+              type = integer
+              optional = true
+              updatable = true
+              when = "../../dependentField > 100"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  YangArrayStructureWithDeepElementWhen {
+    derivedFrom = Root
+    title = "WhenArraytStructure"
+    description = """
+      Yang Resource with 'when' defined within an array structure
+    """
+    properties {
+      dependentField {
+        type = integer
+        optional = true
+        updatable = true
+      }
+      arrayType {
+        type = array
+        optional = true
+        updatable = true
+        items {
+          type = object
+          updatable = true
+          optional = true
+          properties {
+            integerField {
+              type = integer
+              optional = true
+              updatable = true
+            }
+            innerArrayOfObject {
+              type = array
+              optional = true
+              updatable = true
+              items {
+                type = object
+                updatable = true
+                optional = true
+                properties {
+                  innerIntegerField {
+                    type = integer
+                    updatable = true
+                    optional = true
+                  }
+                  innerIntegerWithWhen {
+                    type = integer
+                    updatable = true
+                    optional = true
+                    when = "../../../dependentField > 100"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  YangMustNonExistentField {
+    derivedFrom = Root
+    title = "Object with flawed must"
+    description = "Resource which purposefully defines a 'must' condition that refers to a non-existent field, will never pass"
+    properties {
+      flawedObject {
+        type = object
+        optional = true
+        must = ["./nonExistentField = 'test'"]
+        properties {
+          stringType {
+            type = string
+          }
+        }
+      }
+   }
+  }
+
+  YangMustBasicTypes {
+    derivedFrom = Root
+    title = "YangMustBasicTypes"
+    description = "A Resource which uses a 'must' condition in basic types"
+    properties {
+      mustForIntType {
+        type = integer
+        must = ["../intType > 5"]
+        optional = true
+        updatable = true
+      }
+      mustForStringType {
+        type = integer
+        must = ["../stringType = 'hello'"]
+        optional = true
+        updatable = true
+      }
+      mustForBoolType {
+        type = integer
+        must = ["../boolType = 'true'"]
+        optional = true
+        updatable = true
+      }
+      intType {
+        type = integer
+        optional = true
+        updatable = true
+      }
+      stringType {
+        type = string
+        optional = true
+        updatable = true
+      }
+      boolType {
+        type = boolean
+        optional = true
+        updatable = true
+      }
+    }
+  }
+
+  YangMustDefaultFalse {
+    derivedFrom = Root
+    title = "YangMustDefaultFalse"
+    description = "Resource using 'must', with default forcing it to false"
+    properties {
+      dependentField {
+        type = integer
+        updatable = true
+        default = 2
+      }
+      dependsOnField {
+        type = integer
+        updatable = true
+        optional = true
+        must = ["../dependentField > 10"]
+      }
+    }
+  }
+
+  YangMustDefaultTrue {
+    derivedFrom = Root
+    title = "YangMustDefaultTrue"
+    description = "Resource using 'must', with default forcing it to true"
+    properties {
+      dependentField {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      dependsOnField {
+        type = integer
+        updatable = true
+        optional = true
+        must = ["../dependentField > 10"]
+      }
+    }
+  }
+
+  YangMultipleMustObjectStructure {
+    derivedFrom = Root
+    title = "YangMustObjectStructure"
+    description = "Resource defines multiple 'must' conditions, nested in object structure"
+    properties {
+      dependentField1 {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      dependentField2 {
+        type = string
+        updatable = true
+        default = "valid"
+      }
+      objectType {
+        type = object
+        optional = true
+        updatable = true
+        properties {
+          dependsOnField {
+            type = integer
+            updatable = true
+            optional = true
+            must = ["../../dependentField1 > 10", "/properties/dependentField2 = 'valid'"]
+          }
+        }
+      }
+    }
+  }
+
+  YangCompoundBooleanMustArrayStructure {
+    derivedFrom = Root
+    title = "YangMustArrayStructure"
+    description = "Resource defines compound 'must' in array structure"
+    properties {
+      dependentField1 {
+        type = integer
+        updatable = true
+        default = 200
+      }
+      dependentField2 {
+        type = string
+        updatable = true
+        default = "valid"
+      }
+      arrayType {
+        type = array
+        optional = true
+        updatable = true
+        must = ["/properties/dependentField1 > 2 * 20 and ../dependentField2 = 'valid'"]
+        items {
+          type = object
+          optional = true
+          updatable = true
+          properties {
+            integerField {
+              type = integer
+              updatable = true
+              optional = true
+            }
+          }
+        }
+      }
+    }
+  }
+
+  YangArrayUsingIndex {
+    derivedFrom = Root
+    title = "YangArrayUsingIndex"
+    description = "XPath 'when' and 'must' both using a specific index"
+    properties {
+      dependentField {
+        type = array
+        updatable = true
+        default = [32,42,52]
+        items {
+          type = integer
+        }
+      }
+      propWithWhen {
+        type = boolean
+        updatable = true
+        optional = true
+        when = "../dependentField[2] = 42"
+      }
+      propWithMust {
+        type = string
+        optional = true
+        updatable = true
+        must = ["../dependentField[1] = 32"]
+      }
+    }
+  }
+
+  YangArrayStructureWithElementMust {
+    derivedFrom = Root
+    title = "MustArraytStructure"
+    description = """
+      Yang Resource with a 'must' nested within an array structure
+    """
+    properties {
+      dependentField {
+        type = integer
+        optional = true
+        updatable = true
+      }
+      arrayType {
+        type = array
+        optional = true
+        updatable = true
+        items {
+          type = object
+          updatable = true
+          optional = true
+          properties {
+            integerField {
+              type = integer
+              optional = true
+              updatable = true
+            }
+            integerWithMustField {
+              type = integer
+              optional = true
+              updatable = true
+              must = ["../../dependentField > 100"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

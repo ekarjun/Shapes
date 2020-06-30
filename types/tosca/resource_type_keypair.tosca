@@ -1,0 +1,49 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic key pair resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the KeyPair resource type."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root // we only need this so that we can use the short version below
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  KeyPair {
+    derivedFrom = Root
+    title = "KeyPair"
+    description = """
+      Key pair resource.
+    """
+
+    properties {
+
+      publicKey {
+        title       = "Public Key"
+        description = "Public key of the key pair"
+        type        = string
+        obfuscate   = true
+      }
+
+      fingerprint {
+        title       = "Fingerprint"
+        description = "Key pair fingerprint"
+        type        = string
+      }
+
+    }
+
+    capabilities {
+
+      authenticates {
+        title = "Servers"
+        description = "A key pair authenticates user access to a Server"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Server ]
+      }
+    }
+  }
+}

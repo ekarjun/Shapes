@@ -1,0 +1,89 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }],
+        "label": "General"
+    }, {
+        "label": "Trigger",
+        "children": [{
+            "model": "properties.topic"
+        }, {
+            "model": "properties.eventType"
+        }]
+    }, {
+        "label": "Condition",
+        "children": [{
+            "model": "properties.condition"
+        }]
+    }, {
+        "label": "HTTP action",
+        "children": [{
+            "model": "properties.actionInfo.httpTransportInfo",
+            "label": "HTTP information",
+            "collapsible": true,
+            "children": [{
+                "model": "method",
+                "label": "HTTP method",
+                "description": "The HTTP method for message"
+            }, {
+                "model": "url",
+                "label": "HTTP URL",
+                "description": "The destination URL for HTTP message (e.g. http://127.0.0.1:8181/bpocore/market/api/v1/resources/{resource id})."
+            }, {
+                "model": "headers",
+                "label": "HTTP headers",
+                "description": "Enter the HTTP header name and value",
+                "arrayOptions": {
+                    "autoAdd": true,
+                    "compact": true,
+                    "showLabel": false,
+                    "sortable": true,
+                    "itemCell": {
+                        "children": [{
+                            "model": "properties.name"
+                        }, {
+                            "model": "properties.value"
+                        }]
+                    }
+                }
+            }, {
+                "model": "body.contentType",
+                "label": "Content-Type",
+                "description": "Value of HTTP Content-Type header (e.g. application/json)"
+            }, {
+                "model": "body.contents",
+                "label": "Contents",
+                "description": "Body Contents. For an application/json contentType is a well formed JSON object (e.g. { \"key1\": \"value1\" } )"
+            }]
+        }]
+    }, {
+        "label": "Event bus action",
+        "children": [{
+            "model": "properties.actionInfo.eventTransportInfo",
+            "label": "Event information",
+            "collapsible": true,
+            "children": [{
+                "model": "topic",
+                "label": "Topic",
+                "description": "The event bus topic to send the event on (e.g. bp.ra.v1.alarms)"
+            }, {
+                "model": "eventType",
+                "label": "Event type",
+                "description": "Value of event._type entry for the event (e.g. bp.v1.AlarmEvent)"
+            }, {
+                "model": "contents",
+                "label": "Contents",
+                "description": "A well formed JSON object containing the 'event' portion of a message queue event message (i.e. does not contain version or header fields of an event). The _type field will be added automatically from the eventType setting. e.g. {\"key1\": \"value1\", \"key2\": \"value2\"}"
+            }, {
+                "model": "partitionKey",
+                "label": "Partition Key",
+                "description": "A string describing the partition key for the Kafka topic"
+            }]
+        }]
+    }]
+}

@@ -1,0 +1,30 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Function Virtualization Network Service abstract type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the NFV Network Service abstract type."
+authors     = [ "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  NFVService {
+    derivedFrom = Root
+    abstract = true
+    title = "NFV Service"
+    description = """
+    End-to-end service description including endpoints, VNF forwarding graph, SLA parameters, and monitoring parameters.
+    """
+
+    properties {
+    }
+
+    capabilities {
+    }
+
+  }
+}

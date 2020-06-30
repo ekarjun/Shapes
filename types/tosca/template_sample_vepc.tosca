@@ -1,0 +1,666 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for vEPC"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: Vepc
+"""
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  HeatStack = tosca.resourceTypes.HeatStack
+  Root = tosca.serviceTemplates.Root
+  vEpc = tosca.resourceTypes.Vepc
+}
+
+serviceTemplates {
+
+  Vepc {
+    title = vEPC
+    description = vEPC implemented as a heat stack
+    implements = vEpc
+
+    // Inherent properties from the implemented Virtual EPC type:
+    // - publicNet
+    // - privateNet
+    // - utranNet
+    // - keyName
+    // - dnsAddresses
+    // - templateUrlDir
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      search {
+        title = "Find derived values"
+        type = tosca.resourceTypes.CatalogSearch
+        properties {
+          input {
+            privateNet {getParam = privateNet}
+            utranNet {getParam = utranNet}
+          }
+          toFind = [privateSubnet, utranSubnet]
+          query = """
+            (subnetOf ?privateSubnet ?privateNet)
+            (subnetOf ?utranSubnet ?utranNet)
+          """
+        }
+      }
+
+      vcm {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+          templateInputArgs = {
+            ExternalNetwork = {getProviderResourceId {getParam = publicNet}}
+            InternalNetwork = {getProviderResourceId {getParam = privateNet}}
+            Subnet = {getProviderResourceId {getAttr = [search, output.privateSubnet]}}
+            UtranNetwork = {getProviderResourceId {getParam = utranNet}}
+            UtranSubnet = {getProviderResourceId {getAttr = [search, output.utranSubnet]}}
+            KeyName = {getParam = keyName}
+            VcmDNSaddrs = {getParam = dnsAddresses}
+            TemplateURLdir = {getParam = templateUrlDir}
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "NFVO POC for vEPC Service: Connectem provides the vEPC being launched by this template.  Multiple VCM node instances get deployed.",
+
+  "Parameters" : {
+
+    "ExternalNetwork" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "InternalNetwork" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "UtranNetwork" : {
+      "Description" : "UUID of an existing internal network which can be accessed by UTRAN S1 interface",
+      "Type" : "String"
+    },
+
+    "Subnet" : {
+      "Description" : "UUID of a subnet on existing internal network",
+      "Type" : "String"
+    },
+
+    "UtranSubnet" : {
+      "Description" : "UUID of a subnet on existing internal network which can be accessed by UTRAN S1 interface",
+      "Type" : "String"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "TemplateURLdir" : {
+      "Description" : "Nested stack template directory reachable by URL",
+      "Type" : "String",
+      "Default" : "http://10.101.10.2:8090/downloads"
+    },
+
+    "VcmSwRepoTemplateName" : {
+      "Description" : "Name of stack template for VCM software repository node",
+      "Type" : "String",
+      "Default" : "vcm_sw_repo.template"
+    },
+
+    "VcmNodeTimeout" : {
+      "Description" : "Timeout value in minutes for VCM node to become active",
+      "Type" : "Number",
+      "Default" : "40"
+    },
+
+    "VcmHostName" : {
+      "Description" : "VCM server instance host name",
+      "Type" : "String",
+      "Default" : "vcm"
+    },
+
+    "VcmSizing" : {
+      "Description" : "Comma separated list of VCM node types in the format <name>:<content>:<type>. E.g., 'NO_OF_SC:1,NO_OF_PL:1,NUM_OF_CLP_INSTANCES:1,NUM_OF_DPE_INSTANCES:1'",
+      "Type" : "String",
+      "Default" : "NO_OF_SC:2,NO_OF_PL:11,NUM_OF_CLP_INSTANCES:3,NUM_OF_DPE_INSTANCES:4"
+    },
+
+    "CLP-2-Deploy" : {
+      "Description" : "VCM node instance deployment state, EMPTY creates a nested stack with no resources",
+      "Type" : "String",
+      "Default" : "EMPTY",
+      "AllowedValues" : [ "CREATE", "EMPTY", "UPDATE" ]
+    },
+
+    "CLP-3-Deploy" : {
+      "Description" : "VCM node instance deployment state, EMPTY creates a nested stack with no resources",
+      "Type" : "String",
+      "Default" : "EMPTY",
+      "AllowedValues" : [ "CREATE", "EMPTY", "UPDATE" ]
+    },
+
+    "DPE-2-Deploy" : {
+      "Description" : "VCM node instance deployment state, EMPTY creates a nested stack with no resources",
+      "Type" : "String",
+      "Default" : "EMPTY",
+      "AllowedValues" : [ "CREATE", "EMPTY", "UPDATE" ]
+    },
+
+    "DPE-3-Deploy" : {
+      "Description" : "VCM node instance deployment state, EMPTY creates a nested stack with no resources",
+      "Type" : "String",
+      "Default" : "EMPTY",
+      "AllowedValues" : [ "CREATE", "EMPTY", "UPDATE" ]
+    },
+
+    "DPE-4-Deploy" : {
+      "Description" : "VCM node instance deployment state, EMPTY creates a nested stack with no resources",
+      "Type" : "String",
+      "Default" : "EMPTY",
+      "AllowedValues" : [ "CREATE", "EMPTY", "UPDATE" ]
+    },
+
+    "VcmDNSaddrs" : {
+      "Description" : "Comma separated list of VCM DNS addresses in the format <primary DNS>,<secondary DNS>. E.g., '10.0.1.174,10.3.0.6'",
+      "Type" : "String",
+      "Default" : "10.0.1.174,10.3.0.6"
+    },
+
+    "VcmSwRepoInstanceType" : {
+      "Description" : "VCM software repository nodes instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "VcmInstanceIndex" : {
+      "Description" : "VCM instance index value within the same DC, first one being 1",
+      "Type" : "String",
+      "Default" : "0",
+      "AllowedValues" : [ "0", "1" ]
+    },
+
+    "VcmVmInstanceType" : {
+      "Description" : "VCM cluster node instance type",
+      "Type" : "String",
+      "Default" : "m1.medium",
+      "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "LinuxDistribution": {
+      "Description" : "Distribution of choice",
+      "Type": "String",
+      "AllowedValues" : [ "CentOS-6.4", "CentOS-6.5" ],
+      "Default": "CentOS-6.4"
+    }
+  },
+
+  "Mappings" : {
+    "VcmTemplateMap" : {
+      "PrivateAccess" : { "CREATE" : "vcm_vm_private.template", "EMPTY" : "vcm_vm_private_empty.template", "UPDATE" : "vcm_vm_private_no_wait.template" },
+      "PublicAccess" :  { "CREATE" : "vcm_vm_public_access.template", "EMPTY" : "vcm_vm_public_access_empty.template", "UPDATE" : "vcm_vm_public_access_no_wait.template" }
+    },
+    "VcmHostsConfigMap" : {
+      "VcmPublicAddrsMap" : { "0" : "S1-MME:172.16.0.11:24:eth1,GTPU-1:172.16.0.23:24:eth1,GTPU-2:172.16.0.22:24:eth1,GTPU-3:172.16.0.21:24:eth1",
+                              "1" : "S1-MME:172.16.0.51:24:eth1,GTPU-1:172.16.0.63:24:eth1,GTPU-2:172.16.0.62:24:eth1,GTPU-3:172.16.0.61:24:eth1" },
+      "VcmHostsMap" : { "0" : "192.168.100.21:SW-REPO:repo:REPO:CLUSTER_SW,192.168.100.22:VCM-SC-1:sc1:SC-1:MSR_ACTIVE_NODE,192.168.100.23:VCM-SC-2:sc2:SC-2:MSR_STANDBY_NODE,192.168.100.24:VCM-RIF-1:pl3:PL-3:MME_ACTIVE_NODE,192.168.100.25:VCM-CLP-1:pl4:PL-4:CLP_INSTANCE_NODE_1,192.168.100.26:VCM-DPE-1:pl5:PL-5:DPE_INSTANCE_NODE_1,192.168.100.27:VCM-RIF-2:pl6:PL-6:MME_STANDBY_NODE,192.168.100.28:VCM-CLP-2:pl7:PL-7:CLP_INSTANCE_NODE_2,192.168.100.29:VCM-DPE-2:pl8:PL-8:DPE_INSTANCE_NODE_2,192.168.100.30:VCM-CLP-3:pl9:PL-9:CLP_INSTANCE_NODE_3,192.168.100.31:VCM-DPE-3:pl10:PL-10:DPE_INSTANCE_NODE_3,192.168.100.32:VCM-DPE-4:pl11:PL-11:DPE_INSTANCE_NODE_4,192.168.100.33:VCM-SDB-1:session-db-1:PL-12:SESSION_DB_1_IP,192.168.100.34:VCM-SDB-2:session-db-2:PL-13:SESSION_DB_2_IP",
+                        "1" : "192.168.100.51:SW-REPO:repo:REPO:CLUSTER_SW,192.168.100.52:VCM-SC-1:sc1:SC-1:MSR_ACTIVE_NODE,192.168.100.53:VCM-SC-2:sc2:SC-2:MSR_STANDBY_NODE,192.168.100.54:VCM-RIF-1:pl3:PL-3:MME_ACTIVE_NODE,192.168.100.55:VCM-CLP-1:pl4:PL-4:CLP_INSTANCE_NODE_1,192.168.100.56:VCM-DPE-1:pl5:PL-5:DPE_INSTANCE_NODE_1,192.168.100.57:VCM-RIF-2:pl6:PL-6:MME_STANDBY_NODE,192.168.100.58:VCM-CLP-2:pl7:PL-7:CLP_INSTANCE_NODE_2,192.168.100.59:VCM-DPE-2:pl8:PL-8:DPE_INSTANCE_NODE_2,192.168.100.60:VCM-CLP-3:pl9:PL-9:CLP_INSTANCE_NODE_3,192.168.100.61:VCM-DPE-3:pl10:PL-10:DPE_INSTANCE_NODE_3,192.168.100.62:VCM-DPE-4:pl11:PL-11:DPE_INSTANCE_NODE_4,192.168.100.63:VCM-SDB-1:session-db-1:PL-12:SESSION_DB_1_IP,192.168.100.64:VCM-SDB-2:session-db-2:PL-13:SESSION_DB_2_IP" }
+    },
+    "VcmHostIpAddrMap": {
+      "SW-REPO-HostIpAddr" : { "0" : "192.168.100.21", "1" : "192.168.100.51" },
+      "SC-1-HostIpAddr"    : { "0" : "192.168.100.22", "1" : "192.168.100.52" },
+      "SC-2-HostIpAddr"    : { "0" : "192.168.100.23", "1" : "192.168.100.53" },
+      "RIF-1-HostIpAddr"   : { "0" : "192.168.100.24", "1" : "192.168.100.54" },
+      "CLP-1-HostIpAddr"   : { "0" : "192.168.100.25", "1" : "192.168.100.55" },
+      "DPE-1-HostIpAddr"   : { "0" : "192.168.100.26", "1" : "192.168.100.56" },
+      "RIF-2-HostIpAddr"   : { "0" : "192.168.100.27", "1" : "192.168.100.57" },
+      "CLP-2-HostIpAddr"   : { "0" : "192.168.100.28", "1" : "192.168.100.58" },
+      "DPE-2-HostIpAddr"   : { "0" : "192.168.100.29", "1" : "192.168.100.59" },
+      "CLP-3-HostIpAddr"   : { "0" : "192.168.100.30", "1" : "192.168.100.60" },
+      "DPE-3-HostIpAddr"   : { "0" : "192.168.100.31", "1" : "192.168.100.61" },
+      "DPE-4-HostIpAddr"   : { "0" : "192.168.100.32", "1" : "192.168.100.62" },
+      "SDB-1-HostIpAddr"   : { "0" : "192.168.100.33", "1" : "192.168.100.63" },
+      "SDB-2-HostIpAddr"   : { "0" : "192.168.100.34", "1" : "192.168.100.64" }
+    },
+    "UtranIpAddrMap": {
+      "RIF-1-UtranIpAddr"   : { "0" : "172.16.0.11", "1" : "172.16.0.51" },
+      "RIF-2-UtranIpAddr"   : { "0" : "172.16.0.12", "1" : "172.16.0.52" },
+      "DPE-1-UtranIpAddr"   : { "0" : "172.16.0.21", "1" : "172.16.0.61" },
+      "DPE-2-UtranIpAddr"   : { "0" : "172.16.0.22", "1" : "172.16.0.62" },
+      "DPE-3-UtranIpAddr"   : { "0" : "172.16.0.23", "1" : "172.16.0.63" },
+      "DPE-4-UtranIpAddr"   : { "0" : "172.16.0.24", "1" : "172.16.0.64" }
+    }
+  },
+
+  "Resources" : {
+
+    "SW-REPO" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Ref" : "VcmSwRepoTemplateName" }]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmSwRepoInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmHostName"    : "SW-REPO",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "SW-REPO-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmPublicAddrs" : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmPublicAddrsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmSizing"      : { "Ref" : "VcmSizing" },
+          "TemplateURLdir" : { "Ref" : "TemplateURLdir" }
+        }
+      }
+    },
+
+    "VCM-SC-1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-SDB-2",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "SC",
+          "VcmHostName"    : "VCM-SC-1",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "SC-1-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmPublicAddrs" : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmPublicAddrsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmSizing"      : { "Ref" : "VcmSizing" },
+          "VcmDNSaddrs"    : { "Ref" : "VcmDNSaddrs" }
+        }
+      }
+    },
+
+    "VCM-SC-2" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-SC-1",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "SC",
+          "VcmHostName"    : "VCM-SC-2",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "SC-2-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmPublicAddrs" : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmPublicAddrsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmSizing"      : { "Ref" : "VcmSizing" },
+          "VcmDNSaddrs"    : { "Ref" : "VcmDNSaddrs" }
+        }
+      }
+    },
+
+    "VCM-RIF-1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-SC-2",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "RIF",
+          "VcmHostName"    : "VCM-RIF-1",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "RIF-1-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "RIF-1-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmPublicAddrs" : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmPublicAddrsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-CLP-1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-DPE-4",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "CLP",
+          "VcmHostName"    : "VCM-CLP-1",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "CLP-1-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-DPE-1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-RIF-1",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "DPE",
+          "VcmHostName"    : "VCM-DPE-1",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "DPE-1-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "DPE-1-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-RIF-2" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-CLP-3",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "RIF",
+          "VcmHostName"    : "VCM-RIF-2",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "RIF-2-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "RIF-2-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmPublicAddrs" : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmPublicAddrsMap", { "Ref" : "VcmInstanceIndex" } ] },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-CLP-2" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-CLP-1",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", { "Ref" : "CLP-2-Deploy" } ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "CLP",
+          "VcmHostName"    : "VCM-CLP-2",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "CLP-2-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-DPE-2" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-DPE-1",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", { "Ref" : "DPE-2-Deploy" } ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "DPE",
+          "VcmHostName"    : "VCM-DPE-2",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "DPE-2-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "DPE-2-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-CLP-3" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-CLP-2",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", { "Ref" : "CLP-3-Deploy" } ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "CLP",
+          "VcmHostName"    : "VCM-CLP-3",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "CLP-3-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-DPE-3" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-DPE-2",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", { "Ref" : "DPE-3-Deploy" } ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "DPE",
+          "VcmHostName"    : "VCM-DPE-3",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "DPE-3-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "DPE-3-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-DPE-4" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-DPE-3",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PublicAccess", { "Ref" : "DPE-4-Deploy" } ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "UtranNetwork"   : { "Ref" : "UtranNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "DPE",
+          "VcmHostName"    : "VCM-DPE-4",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "DPE-4-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "UtranHostIpAddr" : { "Fn::FindInMap" : [ "UtranIpAddrMap", "DPE-4-UtranIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "UtranSubnet"    : { "Ref" : "UtranSubnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-SDB-1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "SW-REPO",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade1-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "SDB",
+          "VcmHostName"    : "VCM-SDB-1",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "SDB-1-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    },
+
+    "VCM-SDB-2" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "DependsOn": "VCM-SDB-1",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [{ "Ref" : "TemplateURLdir" }, "/", { "Fn::FindInMap" : [ "VcmTemplateMap", "PrivateAccess", "CREATE" ]}]] },
+        "TimeoutInMinutes" : { "Ref" : "VcmNodeTimeout" },
+        "Parameters" : {
+          "VcmAvailabilityZone" : "blade2-zone",
+          "ExternalNetwork": { "Ref" : "ExternalNetwork" },
+          "InternalNetwork": { "Ref" : "InternalNetwork" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "InstanceType"   : { "Ref" : "VcmVmInstanceType" },
+          "LinuxDistribution" : { "Ref" : "LinuxDistribution" },
+          "VcmNodeType"    : "SDB",
+          "VcmHostName"    : "VCM-SDB-2",
+          "HostIpAddr"     : { "Fn::FindInMap" : [ "VcmHostIpAddrMap", "SDB-2-HostIpAddr", { "Ref" : "VcmInstanceIndex" } ] },
+          "Subnet"         : { "Ref" : "Subnet" },
+          "VcmHosts"       : { "Fn::FindInMap" : [ "VcmHostsConfigMap", "VcmHostsMap", { "Ref" : "VcmInstanceIndex" } ] }
+        }
+      }
+    }
+  },
+
+  "Outputs" : {
+
+    "SW-REPO": {"Value": { "Ref" : "SW-REPO"}},
+    "SW-REPO-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "SW-REPO", "Outputs.PrivateIP" ] }
+    },
+    "SW-REPO-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "SW-REPO", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-SC-1-ID": {"Value": { "Ref" : "VCM-SC-1"}},
+    "VCM-SC-1-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SC-1", "Outputs.PrivateIP" ] }
+    },
+    "VCM-SC-1-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SC-1", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-SC-2-ID": {"Value": { "Ref" : "VCM-SC-2"}},
+    "VCM-SC-2-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SC-2", "Outputs.PrivateIP" ] }
+    },
+    "VCM-SC-2-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SC-2", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-RIF-1-ID": {"Value": { "Ref" : "VCM-RIF-1"}},
+    "VCM-RIF-1-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-RIF-1", "Outputs.PrivateIP" ] }
+    },
+    "VCM-RIF-1-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-RIF-1", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-CLP-1-ID": {"Value": { "Ref" : "VCM-CLP-1"}},
+    "VCM-CLP-1-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-CLP-1", "Outputs.PrivateIP" ] }
+    },
+    "VCM-CLP-1-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-CLP-1", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-DPE-1-ID": {"Value": { "Ref" : "VCM-DPE-1"}},
+    "VCM-DPE-1-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-DPE-1", "Outputs.PrivateIP" ] }
+    },
+    "VCM-DPE-1-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-DPE-1", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-RIF-2-ID": {"Value": { "Ref" : "VCM-RIF-2"}},
+    "VCM-RIF-2-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-RIF-2", "Outputs.PrivateIP" ] }
+    },
+    "VCM-RIF-2-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-RIF-2", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-SDB-1-ID": {"Value": { "Ref" : "VCM-SDB-1"}},
+    "VCM-SDB-1-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SDB-1", "Outputs.PrivateIP" ] }
+    },
+    "VCM-SDB-1-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SDB-1", "Outputs.FloatingIP" ] }
+    },
+
+    "VCM-SDB-2-ID": {"Value": { "Ref" : "VCM-SDB-2"}},
+    "VCM-SDB-2-PrivateIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SDB-2", "Outputs.PrivateIP" ] }
+    },
+    "VCM-SDB-2-FloatingIP" : {
+      "Value" : { "Fn::GetAtt" : [ "VCM-SDB-2", "Outputs.FloatingIP" ] }
+    }
+
+  }
+}
+"""
+        }
+      }
+
+    }
+  }
+}
+

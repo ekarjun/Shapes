@@ -1,0 +1,151 @@
+id          = "http://cyaninc.com/definitions/simple-alarm-v1"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+title       = "Simple Alarm"
+version     = 1.0
+description = """
+  This defines a simple alarm event. It is compliant/aligned with the TM Forum Simple Alarm Profile,
+  TIP_RAM_IA_V1.1.
+
+  Deviations from the standard:
+
+  - Alarm type is an id and not an enum, to keep it extendable. We envision that new alarm
+    types can be dynamically introduced into the system, without software change.
+  - Resource type and resource ID replaces the conventional ManagedClass and ManagedOID
+  - The alarmClearedTime is not mandatory as it may not be present when an alarm is first
+    raised.
+  - The alarm data type name is embedded in the object as "$schema", to allow easy
+    identification on the receiver side
+
+  Here is an example of the simplest JSON data compliant with this schema:
+
+  {
+    "$schema": "http://cyaninc.com/definitions/simple-alarm-v1",
+    "alarmId": "f17b1638-f78f-4252-b6b8-1113af381a7d",
+    "resourceTypeId": "com.cyaninc.bp.resourcetypes.port-v1",
+    "resourceId": "http://bpserver1.ntt.com/market/resources/191f2a90-7fd5-40fc-aabd-da0233251d11",
+    "alarmTypeId": "http://bpserver1.ntt.com/alarms/types/core/equipmentAlarm",
+    "perceivedSeverity": "critical",
+    "probableCause": "Power supply failure",
+    "alarmRaisedTime": "2014-05-14T04:23:12Z",
+  }
+
+"""
+
+// these are the mandatory fields, the rest is optional content
+
+required = [
+  "$schema",
+  alarmId,
+  resourceTypeId,
+  resourceId,
+  alarmTypeId,
+  perceivedSeverity,
+  probableCause,
+  alarmRaisedTime
+]
+
+// alarm attributes
+
+properties {
+
+  "$schema" {
+    enum = [ { "$ref" = "#/$schema" } ]
+  }
+
+  alarmId {
+    type  = string
+  }
+
+  resourceType {
+    type = string
+  }
+
+  resourceId {
+    type = string
+  }
+
+  alarmTypeId {
+    type = string
+  }
+
+  perceivedSeverity {
+    enum = [ "critical", "major", "minor", "warning", "indeterminate", "cleared" ]
+  }
+
+  probableCause {
+    type = string
+  }
+
+  specificProblem {
+    type = string
+  }
+
+  alarmRaisedTime {
+    type = dateTime
+  }
+
+  alarmClearedTime {
+    type = dateTime
+  }
+
+  crossedThresholdInfo {
+    type = { "$ref" = "#/definitions/crossedThreshold" }
+  }
+
+  proposedRepairAction {
+    type = string
+  }
+
+  additionalText {
+    type = string
+  }
+
+}
+
+definitions {
+
+  crossedThreshold {
+
+    properties {
+
+      threshold {
+        type = string
+      }
+
+      indicatorName {
+        type = string
+      }
+
+      observedValue {
+        type = number
+      }
+
+      granularity {
+        type = number
+      }
+
+      direction {
+        enum = [ "up", "down" ]
+      }
+
+      description {
+        type = string
+      }
+
+      indicatorUnit {
+        type = string
+      }
+
+      thresholdQualifier {
+        type = array
+        items {
+          type = object
+          properties {
+            name { type = string }
+            value { type = string }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+id                  = "http://cyaninc.com/json-schemas/market-v1/product-constraints#"
+"$schema"           = "http://json-schema.org/draft-04/schema#"
+type                = object
+title               = "Product Constraints"
+description         = """
+Product constraints further refine/limit property definitions from the associated Resource Type.
+"""
+additionalProperties = false
+patternProperties {
+  "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+    oneOf = [
+      {
+        "$ref" = "#"
+      },
+      {
+        type = object
+        additionalProperties = false
+        properties {
+          enum {
+            type = array,
+            uniqueItems = true
+            minItems = 1
+          }
+        }
+      },
+      {
+        type = object
+        additionalProperties = false
+        properties {
+          constant {
+            oneOf = [
+              {type = number},
+              {type = string},
+              {type = boolean},
+              {type = array},
+              {type = object},
+            ]
+          }
+        }
+      },
+      {
+        type = object
+        additionalProperties = false
+        properties {
+          minimum.type = number
+          maximum.type = number
+        }
+      },
+      {
+        type = object
+        additionalProperties = false
+        properties {
+          pattern {
+            type = string
+            format = regex
+          }
+        }
+      },
+      {
+        type = object
+        additionalProperties = false
+        properties {
+          default {
+            oneOf = [
+                { type = number },
+                { type = string },
+                { type = boolean },
+                { type = array },
+                { type = object },
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+

@@ -1,0 +1,112 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Enterprise to Data Center EVPL connectivity resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the E2DC-EVPL resource type."
+authors     = [ "Darren Dowker (ddowker@cyaninc.com)" ]
+
+imports {
+  NetworkService = tosca.resourceTypes.NetworkService
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  E2dcEvpl {
+
+    derivedFrom = NetworkService
+    title = "Enterprise to Data Center EVPL"
+    description = """
+      Enterprise to Data Center EVPL connectivity.
+    """
+
+    properties {
+
+      enterprisePortId {
+        title = "Enterprise Port Id"
+        description = "Enterprise Port Id"
+        type = string
+      }
+
+      enterpriseVlanId {
+        title = "Enterprise VLAN Id"
+        description = "VLAN Id/tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+      dcNetworkId {
+        title = "Data Center Network Id"
+        description = "Data Center Port Id"
+        type = string
+      }
+
+      enterpriseBwProfile {
+        title = "Enterprise Bandwidth Profile"
+        description = "Enterprise egress Bandwidth profile"
+        type = string
+        updatable = true
+        enum = [ "1(+4) Mbps (cir=1e6,cbs=64,eir=4e6,ebs=64)",
+                 "5(+1) Mbps (cir=5e6,cbs=64,eir=1e6,ebs=64)",
+                 "10(+2) Mbps (cir=10e6,cbs=64,eir=2e6,ebs=64)",
+                 "16(+4) Mbps (cir=16e6,cbs=64,eir=4e6,ebs=64)",
+                 "25(+5) Mbps (cir=25e6,cbs=64,eir=5e6,ebs=64)",
+                 "50(+10) Mbps (cir=50e6,cbs=64,eir=10e6,ebs=64)",
+                 "100(+20) Mbps (cir=100e6,cbs=64,eir=20e6,ebs=64)",
+                 "200(+20) Mbps (cir=200e6,cbs=64,eir=20e6,ebs=64)",
+                 "500 Mbps (cir=500e6,cbs=64,eir=0,ebs=64)",
+                 "1 Gbps (cir=1e9,cbs=64,eir=0,ebs=64)"]
+      }
+
+      dcBwProfile {
+        title = "Data Center Bandwidth Profile"
+        description = "Data Center Egress Bandwidth profile"
+        type = string
+        updatable = true
+        enum = [ "1(+4) Mbps (cir=1e6,cbs=64,eir=4e6,ebs=64)",
+                 "5(+1) Mbps (cir=5e6,cbs=64,eir=1e6,ebs=64)",
+                 "10(+2) Mbps (cir=10e6,cbs=64,eir=2e6,ebs=64)",
+                 "16(+4) Mbps (cir=16e6,cbs=64,eir=4e6,ebs=64)",
+                 "25(+5) Mbps (cir=25e6,cbs=64,eir=5e6,ebs=64)",
+                 "50(+10) Mbps (cir=50e6,cbs=64,eir=10e6,ebs=64)",
+                 "100(+20) Mbps (cir=100e6,cbs=64,eir=20e6,ebs=64)",
+                 "200(+20) Mbps (cir=200e6,cbs=64,eir=20e6,ebs=64)",
+                 "500 Mbps (cir=500e6,cbs=64,eir=0,ebs=64)",
+                 "1 Gbps (cir=1e9,cbs=64,eir=0,ebs=64)"]
+      }
+    }
+
+    requirements {
+
+      enterprisePort {
+        title = "Enterprise UNI Port"
+        description = "Enterprise UNI Port connected to Enterprise LAN"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.UniPort ]
+        minimum = 1
+        maximum = 1
+      }
+
+      network {
+        title = "DC Network"
+        description = "Bridged Data Center network"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.Network ]
+        minimum = 1
+        maximum = 1
+      }
+
+      evpl {
+        title = "EVPL"
+        description = "Ethernet Virtual Private Line"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Evpl ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+}

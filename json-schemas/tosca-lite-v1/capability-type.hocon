@@ -1,0 +1,39 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/capability-type#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Capability Type"
+
+type        = object
+
+required    = [ description ]
+
+properties {
+
+  title {
+    description = "Brief title of capability type"
+    type        = string
+  }
+
+  description {
+    description = "Description of the capability type"
+    type        = string
+  }
+
+  derivedFrom {
+    description = "Package path to the capability type from which this capability type is derived from"
+    type        = string
+  }
+
+  properties {
+    description = "Optional properties of this capability type"
+    type        = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+      }
+    }
+    additionalProperties = false
+  }
+
+}
+
+additionalProperties = false

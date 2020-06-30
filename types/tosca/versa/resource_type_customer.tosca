@@ -1,0 +1,106 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Customer"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Customer"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  Customer {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Versa Customer"
+    description = """
+      This resource type represents a Versa Customer (a.k.a. Organization).
+    """
+
+    properties {
+      subscriptionPlan {
+        title = "Subscription Plan"
+        description = "Subscription Plan of this customer"
+        type = string
+        optional = true
+      }
+
+      sites {
+        title = "Sites"
+        description = "Sites of this customer"
+        type = object
+        optional = true
+      }
+
+      cmsOrgs {
+        title = "Cloud Management System Organizations"
+        description = "Organizations on the Cloud Management Systems to which this customer connects"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      parent {
+        title = "Parent Customer"
+        description = "Name of the parent customer this customer derives from"
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+      appliancePorts {
+        type = Endpoint
+        resourceTypes = [
+          versa.resourceTypes.VirtualPort
+        ]
+      }
+
+      director {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Director
+        ]
+      }
+
+      parent {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Customer
+        ]
+        minimum = 0
+      }
+
+    }
+
+    capabilities {
+      children {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Customer
+        ]
+      }
+      FirewallServices {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Firewall
+        ]
+      }
+      NATServices {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.NAT
+        ]
+      }
+      IpSecVpns {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.IpSecVpn
+        ]
+      }
+    }
+  }
+}

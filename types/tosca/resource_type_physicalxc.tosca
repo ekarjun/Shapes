@@ -1,0 +1,38 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Physical Cross-Connect resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the PhysicalXc resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  PhysicalXc {
+    derivedFrom = Root
+    title = "Physical Cross-Connect"
+    description = """
+      A physical cross-connect.
+    """
+
+    properties {
+
+    }
+
+    requirements {
+
+      ports {
+        title = "Ports"
+        description = "A Physical Cross-Connect connects two Physical Ports"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.PhysicalPort ]
+        minimum = 2
+        maximum = 2
+      }
+    }
+  }
+}

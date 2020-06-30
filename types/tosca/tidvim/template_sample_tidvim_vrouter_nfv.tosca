@@ -1,0 +1,144 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "Sample template for Brocade vRouter 5600 VNF"
+package     = tidvim
+version     = "1.0"
+description = """
+A sample template to instantiate Brocade vRouter 5600 VNF in a NFV cloud environment.
+"""
+authors     = [
+  "Torin Sandall (tsandall@cyaninc.com)",
+]
+
+imports {
+   Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  VirtualRouterNFV {
+    title = "Brocade vRouter 5600 (NFV)"
+    description = """
+    The Brocade vRouter 5600 VNF configured for an NFV cloud environment.
+    """
+    derivedFrom = Vnf
+
+    properties {
+
+      product {
+        type = string
+        title = "VM flavor"
+        description = "Select the VM flavor to use."
+      }
+
+      image {
+        type = string
+        title = "Image"
+        description = "Select the Brocade vRouter image to use."
+      }
+
+      mgmtNet {
+        type = string
+        title = "Management Network"
+        description = "Select the management network to connect to the routers to"
+      }
+
+      dataNet1 {
+        type = string
+        title = "Dataplane Network 1"
+        description = "Select a dataplane network to connect to"
+      }
+
+      dataNet2 {
+        type = string
+        title = "Dataplane Network 2"
+        description = "Select a dataplane network to connect to"
+      }
+
+      genNet1 {
+        type = string
+        title = "Traffic Generator Network 1"
+        description = "Select a traffic generator network to connect to"
+      }
+
+      genNet2 {
+        type = string
+        title = "Traffic Generator Network 2"
+        description = "Select a traffic generator network to connect to"
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  VirtualRouterNFV {
+    title = "Brocade vRouter 5600 (NFV)"
+    description = """
+    The Brocade vRouter 5600 VNF configured for an NFV cloud environment.
+    """
+    implements = tidvim.resourceTypes.VirtualRouterNFV
+
+    resources {
+
+      vm {
+        title = "Brocade vRouter 5600 VM"
+        type = tidvim.resourceTypes.VirtualMachine
+        product = {getParam = product}
+        properties {
+          requested {
+            image = {getParam = image}
+            networks = [
+              {
+                uuid = {getParam = mgmtNet}
+                vpci = "0000:00:10.0"
+                bandwidth = "10 Mbps"
+                name = "mgmt0"
+              }
+            ]
+            extended {
+              processorRanking = 305
+              numas = [
+                {
+                  memory = 12
+                  pairedThreads = 9
+                  pairedThreadsId = [[0, 9], [1, 10], [2, 11], [3, 12], [4, 13], [5, 14], [6, 15], [7, 16], [8, 17]]
+                  interfaces = [
+                    {
+                      name = "dp0port1"
+                      dedicated = "yes"
+                      bandwidth = "10 Gbps"
+                      vpci = "0000:00:11.0"
+                      uuid = {getParam = dataNet1}
+                    },
+                    {
+                      name = "dp0port2"
+                      dedicated = "yes"
+                      bandwidth = "10 Gbps"
+                      vpci = "0000:00:12.0"
+                      uuid = {getParam = dataNet2}
+                    },
+                    {
+                      name = "dp0port3"
+                      dedicated = "yes"
+                      bandwidth = "10 Gbps"
+                      vpci = "0000:00:13.0"
+                      uuid = {getParam = genNet1}
+                    },
+                    {
+                      name = "dp0port4"
+                      dedicated = "yes"
+                      bandwidth = "10 Gbps"
+                      vpci = "0000:00:14.0"
+                      uuid = {getParam = genNet2}
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+
+    }
+  }
+}

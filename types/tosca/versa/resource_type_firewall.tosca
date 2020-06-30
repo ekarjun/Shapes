@@ -1,0 +1,62 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firewall Service"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Firewall Service"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  Firewall {
+    derivedFrom = Vnf
+    title = "Versa Firewall"
+    description = """
+      This resource type represents a Versa Firewall Service.
+    """
+
+    properties {
+
+      customer {
+        title = "Customer"
+        description = "Customer name of this Firewall service"
+        type = string
+        updatable = true
+      }
+
+      appliance {
+        title = "Appliance"
+        description = "Appliance name of this Firewall service"
+        type = string
+        updatable = true
+      }
+
+      firewallConfig {
+        title = "Firewall Config"
+        description = "Configuration of this Firewall service"
+        type = object
+        updatable = true
+      }
+
+    }
+
+    requirements {
+      appliance {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+      customer {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Customer
+        ]
+      }
+    }
+  }
+}

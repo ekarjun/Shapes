@@ -1,0 +1,62 @@
+# Embedded annotations like this are to explain key features of the Planet Orchestrate
+# TOSCA format.
+
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A very simple service built from a template"
+package     = example
+version     = "1.0"
+description = """
+This TOSCA document defines a simple service:
+- it defines a resource type that models the external interface to the service
+- it defines a service template that describes how the service is constrcuted
+"""
+
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)"
+]
+
+resourceTypes {
+
+  SimpleServiceExample {
+    title = Simple Service Example
+    description = Simple service example
+    derivedFrom = tosca.resourceTypes.Root
+    properties {
+      property1 {
+        title = Property 1
+        description = "Some property of the service"
+        type = string
+      }
+      property2 {
+        title = Property 2
+        description = "Some other property of the service"
+        type = string
+      }
+    }
+  }
+
+}
+
+serviceTemplates {
+
+  SimpleServiceImpl {
+
+    title = Simple Service
+    description = Simple service example
+    implements = example.resourceTypes.SimpleServiceExample
+
+    resources {
+
+      // various random strings modeled as subresources
+
+      dbName.type = tosca.resourceTypes.RandomString
+      dbUser.type = tosca.resourceTypes.RandomString
+      dbUserPw.type = tosca.resourceTypes.RandomString
+      dbRootPw.type = tosca.resourceTypes.RandomString
+
+      // other parts of the service go here, some of which will utilize
+      // the above random string resources
+
+    }
+  }
+}

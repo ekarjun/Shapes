@@ -1,0 +1,38 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "VM resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VirtualMachine resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Server = tosca.resourceTypes.Server
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  VirtualMachine {
+    derivedFrom = Server
+    title = "Virtual Machine (VM)"
+    description = """
+      A virtual machine capable of hosting software components.
+    """
+
+    properties {
+    }
+
+    requirements {
+
+      contained {
+        title = "Hypervisor"
+        description = "A VM is contained in a hypervisor"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Hypervisor ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+  }
+}

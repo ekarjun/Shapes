@@ -1,0 +1,18 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "classNames": {
+            "cell": "keyPair"
+        },
+        "children": [{
+            "model": "properties",
+            "label": "Config",
+            "children": [{
+                "model": "fingerprint"
+            }, {
+                "model": "publicKey"
+            }]
+        }]
+    }]
+}

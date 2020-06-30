@@ -1,0 +1,35 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic security group resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the SecurityGroup resource type."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root // we only need this so that we can use the short version below
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  SecurityGroup {
+    derivedFrom = Root
+    title = "SecurityGroup"
+    description = """
+      Security group resource.
+    """
+
+    properties {
+    }
+
+    capabilities {
+
+      secures {
+        title = "Secures"
+        description = "A security group secures server/port access"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Server, tosca.resourceTypes.EthernetPort ]
+      }
+    }
+  }
+}

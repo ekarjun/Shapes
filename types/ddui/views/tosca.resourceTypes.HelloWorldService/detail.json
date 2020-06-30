@@ -1,0 +1,21 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Greeting",
+        "children": [{
+            "model": "properties.visitor"
+        }, {
+            "model": "properties.length"
+        }]
+    }]
+}

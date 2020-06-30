@@ -1,0 +1,145 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a Juniper Firefly vCPE VNF server"
+package     = juniper
+version     = "1.0"
+description = """
+Implements: FireflyVcpeVnfVlan
+This implementation is based on a VM and a few additional OpenStack resources.
+"""
+authors     = [
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  FireflyVcpe = juniper.resourceTypes.FireflyVcpe
+  FireflyVnf = juniper.resourceTypes.FireflyVnf
+  Network = tosca.resourceTypes.EthernetNetwork
+  Subnet = tosca.resourceTypes.Subnet
+}
+
+serviceTemplates {
+
+  FireflyVcpeVnfVlan {
+    title = Virtual Firewall (Firefly)
+    description = A Firefly vCPE server deployed as a VNF creating new networks and VLANs
+    implements = juniper.resourceTypes.FireflyVcpeVnfVlan
+
+    // Inherent properties from the implemented FireflyVcpeVnfVlan type:
+    // - flavorVmProduct
+    // - image
+    // - keyPair
+    // - securityGroup
+    // - privateNet
+    // - publicNet
+    // - ge-001-VlanId
+    // - ge-001-Prefix
+    // - ge-002-VlanId
+    // - ge-002-Prefix
+    //
+    // - domainId
+    // - accessIp
+    // - interfaces.ipv4Address
+    // - interfaces.securityZone
+    // - staticRouting.routeDestination
+    // - staticRouting.routeNextHop
+    // - firewall.securityPolicies.fromZone
+    // - firewall.securityPolicies.toZone
+    // - firewall.securityPolicies.service
+    // - firewall.securityPolicies.protocol
+    // - firewall.securityPolicies.portType
+    // - firewall.securityPolicies.fromPort
+    // - firewall.securityPolicies.toPort
+    // - firewall.securityPolicies.sourcePrefix
+    // - firewall.securityPolicies.destinationPrefix
+    // - firewall.securityPolicies.action
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      ge-001-Net {
+        type = Network
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           networkType = vlan
+           external = false
+           physicalNetwork = "physnet3"
+           segmentationId = {getParam = ge-001-VlanId}
+        }
+      }
+
+      ge-001-Subnet {
+        type = Subnet
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           ipVersion = IPv4
+           dhcpEnabled = false
+           prefix = {getParam = ge-001-Prefix}
+           network = {getResourceId = ge-001-Net}
+        }
+        terminateBefore = [ ge-001-Net ]
+      }
+
+      ge-002-Net {
+        type = Network
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           networkType = vlan
+           external = false
+           physicalNetwork = "physnet4"
+           segmentationId = {getParam = ge-002-VlanId}
+        }
+      }
+
+      ge-002-Subnet {
+        type = Subnet
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+           ipVersion = IPv4
+           dhcpEnabled = false
+           prefix = {getParam = ge-002-Prefix}
+           network = {getResourceId = ge-002-Net}
+        }
+        terminateBefore = [ ge-002-Net ]
+      }
+
+      vnf {
+        type = FireflyVnf
+        properties {
+           flavorVmProduct = {getParam = flavorVmProduct}
+           image = {getParam = image}
+           keyPair = {getParam = keyPair}
+           securityGroup = {getParam = securityGroup}
+           privateNet = {getParam = privateNet}
+           publicNet = {getParam = publicNet}
+           ge-001-Net = {getResourceId = ge-001-Net}
+           ge-002-Net = {getResourceId = ge-002-Net}
+        }
+        activateAfter = [ ge-001-Subnet, ge-002-Subnet ]
+        terminateBefore = [ ge-001-Subnet, ge-002-Subnet ]
+      }
+
+      vcpe {
+        type = FireflyVcpe
+        properties {
+           domainId = {getParam = domainId}
+           accessIp = {getAttr = [vnf, floatingIpAddr]}
+           interfaces = [ {name = "ge-0/0/1.0",
+                           ipv4Address = {join = ["", {getAttr = [vnf, ge-001-IpAddr]}, "/",
+                                                  {split = [{getParam = ge-001-Prefix }, "/", 1]}]},
+                           securityZone = "trust"},
+                          {name = "ge-0/0/2.0",
+                           ipv4Address = {join = ["", {getAttr = [vnf, ge-002-IpAddr]}, "/",
+                                                  {split = [{getParam = ge-002-Prefix }, "/", 1]}]},
+                           securityZone = "untrust"}
+           ]
+           staticRouting = {getOptionalParam = staticRouting}
+           firewall = {getOptionalParam = firewall}
+        }
+        terminateBefore = [ vnf ]
+      }
+    }
+  }
+}

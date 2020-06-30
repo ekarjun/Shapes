@@ -1,0 +1,85 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for Enterprise to DC connectivity"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: EnterpriseToDc
+Sample template for Enterprise to DC connectivity.
+"""
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)"
+]
+
+imports {
+  Root = tosca.serviceTemplates.Root
+}
+
+serviceTemplates {
+
+  EnterpriseToDc {
+
+    title = Enterprise to DC connectivity
+    description = An Enterprise NID attached to a DC network.
+    implements = tosca.resourceTypes.E2dcEvpl
+
+    // Inherent properties from the implemented E2dcEvpl type:
+    // - enterprisePortId
+    // - enterpriseVlanId
+    // - dcNetworkId
+    // - enterpriseBwProfile
+    // - dcBwProfile
+
+    properties {
+      // no additional template-specific attributes
+    }
+
+    resources {
+
+      portsSearch {
+        title = "Port locator query"
+        type = tosca.resourceTypes.CatalogSearch
+        properties {
+          input {
+            enterprisePortId {getParam = enterprisePortId}
+            dcNetworkId {getParam = dcNetworkId}
+          }
+          toFind = [zPortId, gwPortId, dcProvider, wanProvider]
+          query = """
+            (resourceOfType ?gwPortId "tosca.resourceTypes.GatewayPort")
+            (sameDomain ?gwPortId ?dcNetworkId ?dcProvider)
+            (resourceOfType ?zPortId "tosca.resourceTypes.UniPort")
+            (sameDomain ?zPortId ?aPortId ?wanProvider)
+            (xConnected ?zPortId ?gwPortId ?xcId)
+          """
+        }
+      }
+
+      l2vpn {
+        title = "L2 VPN component (DC)"
+        type = tosca.resourceTypes.L2Vpn
+        product { domain = { getAttr = [ portsSearch, output.dcProvider ] } }
+        properties {
+          network {getParam = dcNetworkId}
+          gwPort {getAttr = [portsSearch, output.gwPortId]}
+        }
+      }
+
+      evpl {
+        title = "EVPL component (WAN)"
+        type = tosca.resourceTypes.Evpl
+        product { domain = { getAttr = [ portsSearch, output.wanProvider ] } }
+        properties {
+          // A-end
+          aEndPort {getParam = enterprisePortId}
+          aEndVlanId {getParam = enterpriseVlanId}
+          aEndBwProfile {getParam = enterpriseBwProfile}
+          // Z-end
+          zEndPort {getAttr = [portsSearch, output.zPortId]}
+          zEndBwProfile {getParam = dcBwProfile}
+          zEndVlanId {getParam = enterpriseVlanId}  // {getAttr = [l2vpn, gwPortVlanId]}
+        }
+      }
+
+    }
+  }
+}

@@ -1,0 +1,50 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet Virtual Private Line end-point resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the EvplEndPoint resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  EvcEndPoint = tosca.resourceTypes.EvcEndPoint
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EvplEndPoint {
+    derivedFrom = EvcEndPoint
+    title = "EVPL End Point"
+    description = """
+      Ethernet Virtual Line end-point resource.
+    """
+
+    properties {
+
+      vlanId {
+        title = "VLAN Id"
+        description = "VLAN Id/tag"
+        type = integer
+        minimum = 1
+        maximum = 4095
+      }
+
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+      terminate {
+        title = "Link"
+        description = "An EVPL endpoint terminates an EVPL"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Evpl ]  // should be a superclass to allow EVLANs later
+        minimum = 1
+        maximum = 1
+      }
+    }
+  }
+}

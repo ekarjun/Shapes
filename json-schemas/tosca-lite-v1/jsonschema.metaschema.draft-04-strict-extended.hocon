@@ -1,0 +1,267 @@
+{
+    "id": "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict-extended.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "Meta-schema used for nested properties. Based on draft schema with three changes: (1) reject foreign elements (strict), (2) allow the access modifiers 'output', 'config', 'optional', 'updatable' and 'obfuscate' as well as the fields 'units' and 'uiWidget', and (3) allow use of 'propertyType' for property definition re-use.",
+    "definitions": {
+        "schemaArray": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#" }
+        },
+        "positiveInteger": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "positiveIntegerDefault0": {
+            "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
+        },
+        "simpleTypes": {
+            "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
+        },
+        "stringArray": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "propertyType": {
+            "oneOf": [
+                {
+                    "$ref": "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#/definitions/objectPath"
+                }
+            ]
+        },
+        "union": {
+            "type": "array",
+            "items": {
+                "minItems": 1,
+                "uniqueItems": true,
+                "additionalItems": false,
+                "anyOf": [
+                    {
+                        "$ref": "http://cyaninc.com/json-schemas/tosca-lite-v1/property-union#"
+                    }
+                ]
+            }
+        },
+        "arrayKey": {
+            description: "Optional key or list of keys as either an array or space separated list which are used to uniquely identify object array elements",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        }
+    },
+    "allOf": [
+        {
+            "oneOf": [
+                {
+                    "required": ["type"]
+                },
+                {
+                    "required": ["propertyType"]
+                },
+                {
+                    "required": ["union"]
+                }
+            ]
+        },
+        {
+          "type": "object",
+          "properties": {
+              "id": {
+                  "type": "string",
+                  "format": "uri"
+              },
+              "$schema": {
+                  "type": "string",
+                  "format": "uri"
+              },
+              "title": {
+                  "type": "string"
+              },
+              "description": {
+                  "type": "string"
+              },
+              "default": {
+                  "anyOf": [
+                      { "type": "string" },
+                      { "type": "integer" },
+                      { "type": "number" },
+                      { "type": "boolean" },
+                      { "type": "object" },
+                      { "type": "array" }
+                  ]
+              },
+              "multipleOf": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+              },
+              "maximum": {
+                  "type": "number"
+              },
+              "exclusiveMaximum": {
+                  "type": "boolean",
+                  "default": false
+              },
+              "minimum": {
+                  "type": "number"
+              },
+              "exclusiveMinimum": {
+                  "type": "boolean",
+                  "default": false
+              },
+              "maxLength": { "$ref": "#/definitions/positiveInteger" },
+              "minLength": { "$ref": "#/definitions/positiveIntegerDefault0" },
+              "pattern": {
+                  "type": "string",
+                  "format": "regex"
+              },
+              "lengthMatcher" {
+                "description" = "Optional array of length restrictions to apply to a string property"
+                "type" = "array"
+                "minItems" = 1
+                "items" {
+                  "type" = "string"
+                }
+              },
+              "must" {
+                "description" = "Optional array of XPath definitions all of which, if met, will allow object to be defined"
+                "type" = "array"
+                "minItems" = 1
+                "items" {
+                  "type" = "string"
+                }
+              },
+              "presence" {
+                "description" = "A place holder string that allows for compatibility with YANG models"
+                "type" = "string"
+              }
+              "when" {
+                "description" = "Optional XPath definition which if true, will require a property field to be defined",
+                "type" = "string"
+              },
+              "patternMatcher" {
+                "description" = "Optional array of regex pattern(s) to restrict permissible values for this property"
+                "type" = "array"
+                "minItems"   = 1
+                "items" {
+                    "type" = "string"
+                    "format" = "regex"
+                }
+              },
+              "presence": {
+                  "type": "string"
+              },
+              "additionalItems": {
+                  "anyOf": [
+                      { "type": "boolean" },
+                      { "$ref": "#" }
+                  ],
+                  "default": {}
+              },
+              "items": {
+                  "anyOf": [
+                      { "$ref": "#" },
+                      { "$ref": "#/definitions/schemaArray" }
+                  ],
+                  "default": {}
+              },
+              "maxItems": { "$ref": "#/definitions/positiveInteger" },
+              "minItems": { "$ref": "#/definitions/positiveIntegerDefault0" },
+              "uniqueItems": {
+                  "type": "boolean",
+                  "default": false
+              },
+              "maxProperties": { "$ref": "#/definitions/positiveInteger" },
+              "minProperties": { "$ref": "#/definitions/positiveIntegerDefault0" },
+              "required": { "$ref": "#/definitions/stringArray" },
+              "additionalProperties": {
+                  "anyOf": [
+                      { "type": "boolean" },
+                      { "$ref": "#" }
+                  ],
+                  "default": {}
+              },
+              "definitions": {
+                  "type": "object",
+                  "additionalProperties": { "$ref": "#" },
+                  "default": {}
+              },
+              "properties": {
+                  "type": "object",
+                  "additionalProperties": { "$ref": "#" },
+                  "default": {}
+              },
+              "patternProperties": {
+                  "type": "object",
+                  "additionalProperties": { "$ref": "#" },
+                  "default": {}
+              },
+              "dependencies": {
+                  "type": "object",
+                  "additionalProperties": {
+                      "anyOf": [
+                          { "$ref": "#" },
+                          { "$ref": "#/definitions/stringArray" }
+                      ]
+                  }
+              },
+              "enum": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true
+              },
+              "type": {
+                  "anyOf": [
+                      { "$ref": "#/definitions/simpleTypes" },
+                      {
+                          "type": "array",
+                          "items": { "$ref": "#/definitions/simpleTypes" },
+                          "minItems": 1,
+                          "uniqueItems": true
+                      }
+                  ]
+              },
+              "propertyType": {
+                  "$ref": "#/definitions/propertyType"
+              },
+              "union": {
+                  "$ref": "#/definitions/union"
+              },
+              "key": {
+                  "$ref": "#/definitions/arrayKey"
+              }
+              "allOf": { "$ref": "#/definitions/schemaArray" },
+              "anyOf": { "$ref": "#/definitions/schemaArray" },
+              "oneOf": { "$ref": "#/definitions/schemaArray" },
+              "not": { "$ref": "#" },
+              "format": { "type": "string" },
+              "$ref": { "type": "string" },
+              "output": { "type": "boolean" },
+              "config": { "type": "boolean" },
+              "optional": { "type": "boolean" },
+              "updatable": { "type": "boolean" },
+              "obfuscate": { "type": "boolean" },
+              "units": { "type": "string" },
+              "uiWidget": { "type": "string" }
+          },
+          "dependencies": {
+              "exclusiveMaximum": [ "maximum" ],
+              "exclusiveMinimum": [ "minimum" ],
+              "presence": { "properties": { "type": { "enum": [ "object" ] } } }
+          },
+          "default": {},
+          "additionalProperties": false
+        }
+    ]
+}

@@ -1,0 +1,106 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template for service discovery"
+package     = tosca
+version     = "1.0"
+description = """ """
+
+resourceTypes {
+
+  TopLevel {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propTop {
+        title       = "Some Prop"
+        description = ""
+        type        = string
+        optional    = true
+      }
+    }
+  }
+
+  MidLevel {
+    derivedFrom = tosca.resourceTypes.Root
+    title = L3VPN
+    description = """
+      Top level L3VPN service.
+    """
+    properties {
+      propMid {
+        title       = "Some Prop"
+        description = ""
+        type        = string
+       }
+     propMid2 {
+       title       = "Some Prop"
+       description = ""
+       type        = string
+       output = true
+      }
+    }
+  }
+
+  Endpoint {
+      derivedFrom = tosca.resourceTypes.Root
+      title = L3VPN
+      description = """
+        Discovered L3VPN endpoint.
+      """
+      properties {
+        propLow {
+          title       = "Some Prop C"
+          description = ""
+          type        = string
+          updatable   = true
+          optional    = true
+        }
+      }
+    }
+}
+
+
+serviceTemplates {
+
+    TopLevelService {
+       title = Top Level Service
+       description = Top Level Service
+       implements = tosca.resourceTypes.TopLevel
+       resources {
+         l1 {
+           title = "Demo Title"
+           description = "This is a Demo Description"
+           type = tosca.resourceTypes.MidLevel
+           properties = {
+             propMid = { getParam = propTop1 }
+           }
+         }
+       }
+    }
+
+    MidLevelService {
+       title = Mid level resource
+       description = Mid Level Service
+       implements = tosca.resourceTypes.MidLevel
+       resources {
+         endpoint1 {
+           title = "endpoint 1"
+           description = "endpoint 1 Description"
+           type = tosca.resourceTypes.Endpoint
+           properties = {
+             propLow = { getParam = propMid }
+           }
+         }
+          endpoint2 {
+            title = "endpoint2"
+            description = "endpoint 2 Description"
+            type = tosca.resourceTypes.Endpoint
+            properties = {
+              propLow = { getParam = propMid }
+            }
+          }
+       }
+    }
+}

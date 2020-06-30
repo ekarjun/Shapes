@@ -1,0 +1,62 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "NAT Service"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type NAT Service"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  NAT {
+    derivedFrom = Vnf
+    title = "Versa NAT"
+    description = """
+      This resource type represents a Versa NAT Service.
+    """
+
+    properties {
+
+      customer {
+        title = "Customer"
+        description = "Customer name of this NAT service"
+        type = string
+        updatable = true
+      }
+
+      appliance {
+        title = "Appliance"
+        description = "Appliance name of this NAT service"
+        type = string
+        updatable = true
+      }
+
+      natConfig {
+        title = "NAT Config"
+        description = "Configuration of this NAT service"
+        type = object
+        updatable = true
+      }
+
+    }
+
+    requirements {
+      appliance {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+      customer {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Customer
+        ]
+      }
+    }
+  }
+}

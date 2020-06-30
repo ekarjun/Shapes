@@ -1,0 +1,195 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for demo use case: generator/receptor"
+package     = tidvim
+version     = "1.0"
+description = """
+"""
+authors     = [
+  "Torin Sandall (tsandall@cyaninc.com)",
+]
+
+imports {
+  NFVService = tosca.resourceTypes.NFVService
+}
+
+resourceTypes {
+
+  GenRec {
+    title = "Generator Receptor"
+    description = "Test case involving two data nets and two vms"
+    derivedFrom = NFVService
+
+    properties {
+
+      image {
+        type = string
+        title = "Image"
+        description = "Identifies the image to deploy on the VMs."
+      }
+
+      vmProduct {
+        type = string
+        title = "VM Product"
+        description = "Identifies the flavor of VM to instantiate for the use case."
+      }
+
+      networkProduct {
+        type = string
+        title = "Network Product"
+        description = "Identifies the network to instantiate for the use case."
+      }
+
+      bridgeNetwork1 {
+        type = string
+        title = "Bridge Network 1"
+        description = "Bridge network to connect VMs to."
+      }
+
+      bridgeNetwork2 {
+        type = string
+        title = "Bridge Network 2"
+        description = "Bridge network to connect VMs to."
+      }
+
+      processorRanking {
+        type = integer
+        title = "Processing Ranking"
+        description = "A ranking of minimum processor performance."
+      }
+    }
+  }
+}
+
+serviceTemplates {
+
+  GenRec {
+    title = "Generator Receptor"
+    description = "Test case involving two data nets and two vms"
+    implements = tidvim.resourceTypes.GenRec
+
+
+    properties {
+    }
+
+    resources {
+
+      net1 {
+        title = "Network 1"
+        type = tidvim.resourceTypes.EthernetNetwork
+        properties {
+          requested {
+            networkType = "data"
+            shared = false
+            adminStateUp = true
+          }
+        }
+      }
+
+      net2 {
+        title = "Network 2"
+        type = tidvim.resourceTypes.EthernetNetwork
+        properties {
+          requested {
+            networkType = "data"
+            shared = false
+            adminStateUp = true
+          }
+        }
+      }
+
+      vm1 {
+        title = "VM 1"
+        type = tidvim.resourceTypes.VirtualMachine
+        properties {
+          requested {
+            image = {getParam = image}
+            networks = [
+              {
+                uuid = {getParam = bridgeNetwork2}
+                vpci = "0000:00:0a.0"
+              },
+              {
+                uuid = {getParam = bridgeNetwork2}
+                vpci = "0000:00:0b.0"
+              }
+            ]
+            extended {
+              processorRanking = {getParam = processorRanking}
+              numas = [
+                {
+                  memory = 8
+                  pairedThreads = 5
+                  pairedThreadsId = [ [0,1], [2,3], [4,5], [6,7], [8,9] ]
+                  interfaces = [
+                    {
+                      name = "xe0"
+                      dedicated = "yes"
+                      bandwidth = "10000"
+                      vpci = "0000:00:11.0"
+                      uuid = {getResourceId = net1}
+                    },
+                    {
+                      name = "xe1"
+                      dedicated = "yes"
+                      bandwidth = "10000"
+                      vpci = "0000:00:12.0"
+                      uuid = {getResourceId = net2}
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+
+
+      vm2 {
+        title = "VM 2"
+        type = tidvim.resourceTypes.VirtualMachine
+        properties {
+          requested {
+            image = {getParam = image}
+            networks = [
+              {
+                uuid = {getParam = bridgeNetwork2}
+                vpci = "0000:00:0a.0"
+              },
+              {
+                uuid = {getParam = bridgeNetwork2}
+                vpci = "0000:00:0b.0"
+              }
+            ]
+            extended {
+              processorRanking = {getParam = processorRanking}
+              numas = [
+                {
+                  memory = 8
+                  pairedThreads = 5
+                  pairedThreadsId = [ [0,1], [2,3], [4,5], [6,7], [8,9] ]
+                  interfaces = [
+                    {
+                      name = "xe0"
+                      dedicated = "yes"
+                      bandwidth = "10000"
+                      vpci = "0000:00:11.0"
+                      uuid = {getResourceId = net1}
+                    },
+                    {
+                      name = "xe1"
+                      dedicated = "yes"
+                      bandwidth = "10000"
+                      vpci = "0000:00:12.0"
+                      uuid = {getResourceId = net2}
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+
+    }
+  }
+}

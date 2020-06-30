@@ -1,0 +1,63 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual EPC resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the vEPC resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  Vepc {
+
+    derivedFrom = Vnf
+    title = vEPC
+    description = """
+      vEPC resource holding virtual EPC type of VNFs.
+    """
+
+    properties {
+
+      publicNet {
+        title = "Public network"
+        description = "UUID of the public network where the vEPC VNFs shall be accessible"
+        type = string
+      }
+
+      privateNet {
+        title = "Private network"
+        description = "UUID of the private network in one of the DCs to host the vEPC VNF VMs"
+        type = string
+      }
+
+      utranNet {
+        title = "UTRAN network"
+        description = "UUID of a subnet on existing internal network which can be accessed by UTRAN S1 interface"
+        type = string
+      }
+
+      keyName {
+        title = "Encryption SSH key"
+        description = "Name of an existing EC2 KeyPair to enable SSH access to the VNF instances of the vEPC"
+        type = string
+      }
+
+      dnsAddresses {
+        title = "EPC DNS server address(es)"
+        description = "Comma separated list of VCM DNS addresses in the format <primary DNS>,<secondary DNS>"
+        type = string
+      }
+
+      templateUrlDir {
+        title = "HTTP file server URL"
+        description = "Nested stack template directory reachable by URL"
+        type = string
+      }
+
+    }
+
+  }
+}

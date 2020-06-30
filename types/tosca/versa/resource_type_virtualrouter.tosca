@@ -1,0 +1,84 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual Router"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Virtual Router"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  VirtualRouter {
+    derivedFrom = Vnf
+    title = "Versa Virtual Router"
+    description = """
+      This resource type represents a Virtual Router.
+    """
+
+    properties {
+      applianceName {
+        title = "Appliance Name"
+        description = "Name of the appliance"
+        type = string
+      }
+
+      interfaces {
+        title = "Interfaces"
+        description = "Interfaces belong to this Virtual Router"
+        type = array
+        items.type = string
+      }
+
+      staticRoutes {
+        title = "Static Routes"
+        description = "Static routing table of this Virtual Router"
+        type = array
+        items.type = object
+        optional = true
+      }
+
+      protocols {
+        title = "Protocols"
+        description = "Routing protocols for this Virtual Router"
+        type = object
+        optional = true
+      }
+
+      policies {
+        title = "Policies"
+        description = "Redistribution policies for this Virtual Router"
+        type = array
+        items.type = object
+        optional = true
+      }
+
+      redistributeToBgpPolicy {
+        title = "redistributeToBgpPolicy"
+        description = "Policy for redistribution into BGP"
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+      appliance {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+      ports {
+        type = Endpoint
+        resourceTypes = [
+          tosca.resourceTypes.Port
+        ]
+      }
+    }
+  }
+}

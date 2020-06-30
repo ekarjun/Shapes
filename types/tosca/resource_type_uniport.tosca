@@ -1,0 +1,63 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "UNI port resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the UNIPort resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  PhysicalPort = tosca.resourceTypes.PhysicalPort
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  UniPort {
+    derivedFrom = PhysicalPort
+    title = "UNI Port"
+    description = """
+      UNI Port resource.
+    """
+
+    properties {
+      serviceProfiles {
+        title = "Service Profiles"
+        description = "Service Profiles supported on this port"
+        type = array
+        items.type = string
+        optional = true
+        output = true
+      }
+    }
+
+    requirements {
+
+      host {
+        title = "Network Element"
+        description = "A UNI port is hosted on a network element"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.NetworkElement ]
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    capabilities {
+
+      access {
+        title = "Network Services"
+        description = "A UNI port provides access to Network Services"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.NetworkService ]
+      }
+
+      eps {
+        title = "Endpoints"
+        description = "A UNI port supports EVC endpoints"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EvcEndPoint ]
+      }
+    }
+  }
+}

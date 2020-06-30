@@ -1,0 +1,41 @@
+Instructions
+============
+
+Steps for an intial on-boarding:
+
+# Decide on a working area and create a dir for it. This can be your home, as we are going to create
+  a subdir in it. We will assume below it is your home (~).
+
+# Have access to running orchestrator, obtain git URL and add your public ssh key to Asset Manager.
+
+# Clone the master repo of the orchestrator's model-defintion:
+
+  cd ~
+  git clone <git url> orchestrate-model
+  cd orchestrate-model
+
+# Copy the sample tosca file from the examples dir into the tosca model directory:
+
+  cp examples/simple-service-example/simple-service-example.tosca types/tosca/
+  git add types/tosca/*
+
+# Copy the sample ui schema to its place:
+
+  cp examples/simple-service-example/examples.resourceTypes.SimpleServiceExample.json ui-schema/
+  git add ui-schema/*
+
+# Commit, push changes back to the orchestrator.
+
+  git commit -am "First version of simple service example"
+  git push
+
+# Issue a pull request from the UI and verify that it has been accepted. If not, the issue raised by
+  the orchestrator need to be addressed by further modifying the tosca file(s). Once it is accepted,
+  the type and templates are ready to be used (see remaining steps).
+
+# Create a new product for (each) service template you created. The above example creates exactly one
+  template. Use the UI to auto-create a new product for each template that does not yet have at least
+  one product.
+
+# You should be ready to instantiate the given product from the orchestrator and see the form pop up
+  as defined by the UI file.

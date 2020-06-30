@@ -1,0 +1,113 @@
+"$schema" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title = "Base device resource type definition"
+package = tosca
+version = "1.0"
+description = "This document defines the base device resource attributes.  The RA is expected to extend this defininition with authentication and connection information."
+authors = ["Kerry Neef (kerry.neef@cyaninc.com)"]
+
+imports {
+  NE = tosca.resourceTypes.NetworkElement
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Device {
+    derivedFrom = NE
+    title = "Device"
+    description = """
+    A network device.
+    """
+
+    properties {
+
+      resourceType {
+        type = string
+        title = "Adapter Resource Type"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      typeGroup {
+        type = string
+        title = "Type Group"
+        description = ""
+        optional = false
+        config = false
+      }
+
+      deviceVersion {
+        type = string
+        title = "Device Version"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      serialNumber {
+        type = string
+        title = "Serial Number"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      swImage {
+        type = string
+        title = "Software Image"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      swVersion {
+        type = string
+        title = "Software Version"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      swType {
+        type = string
+        title = "Software Type"
+        description = ""
+        optional = true
+        config = false
+      }
+
+      type {
+        type = string
+        title = "Type"
+        description = ""
+        optional = true
+        config = false
+      }
+    }
+
+    capabilities {
+
+      equipmentHolders {
+        title = "Equipment Holders"
+        description = "A device contains equipment holders."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EquipmentHolder ]
+      }
+
+      equipment {
+        title = "Equipment"
+        description = "A device contains equipment."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Equipment ]
+      }
+
+      terminationPoints {
+        title = "Termination Points"
+        description = "A device contains termination points."
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.TerminationPoint ]
+      }
+    }
+  }
+}

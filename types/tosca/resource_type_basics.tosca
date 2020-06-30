@@ -1,0 +1,479 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Root resource type"
+package     = "tosca"
+version     = "1.0"
+description = "This document defines basic built-in resource types."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Endpoint = tosca.capabilityTypes.Endpoint
+}
+
+resourceTypes {
+
+  Root {
+    abstract = true
+    title = Root
+    description = """
+      This is the root resource type from which all resource types shall be derived, directly
+      or indirectly.
+    """
+
+    requirements {
+
+      composed {
+        title = Composed
+        type = tosca.capabilityTypes.Component
+        description = """
+          This resource type can compose other resource types but does not have to and it may compose as many as
+          necessary.
+        """
+        minimum = 0
+        maximum = 0
+      }
+
+    }
+
+    capabilities {
+
+      composable {
+        title = Composable
+        type = tosca.capabilityTypes.Component
+        description = """
+          This resource type can be a component in other resource types.
+        """
+      }
+
+    }
+  }
+
+  Physical {
+    derivedFrom = tosca.resourceTypes.Root
+    title = Physical
+    abstract = true
+    description = """
+      This resource type is to be used as base type for physical resources.
+    """
+
+    properties {
+
+      address {
+        title       = "Address"
+        description = "Street address of the resource"
+        type        = string
+        optional    = true
+        updatable   = true
+      }
+
+      locator {
+        title       = "Locator Info"
+        description = "Additional information to locate the resource (within the address)"
+        type        = string
+        optional    = true
+        updatable   = true
+      }
+
+      latitude {
+        title       = "Latitude"
+        description = "GPS latitude coordinate of the resource"
+        type        = number
+        optional    = true
+        updatable   = true
+      }
+
+      longitude {
+        title       = "Longitude"
+        description = "GPS longitude coordinate of the resource"
+        type        = number
+        optional    = true
+        updatable   = true
+      }
+    }
+  }
+
+  RemoteAccessible {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Remote Accessible"
+    abstract = true
+    description = """
+      A trait to be used for resource types that may provide a remote access point in form of a URI.
+    """
+
+    properties {
+
+      remoteAccess {
+        title = "Remote Access"
+        description = "Remote access URI"
+        type = string
+//        format = URL
+        optional = true
+      }
+    }
+  }
+
+  NetworkAttachable {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Network Attachable"
+    abstract = true
+    description = """
+      A trait to be used for resource types that may be attached to one or more networks.
+    """
+
+    requirements {
+      networks {
+        title = "Networks"
+        description = "Attached to the following networks"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.Network ]
+      }
+    }
+  }
+
+  CatalogSearch {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Search Engine"
+    description = """
+      A virtual resource implementing a generic catalog search, capable of accessing type, product, and instance
+      catalogs.
+
+      This type is experimental. In the future, backwards incompatible changes may be made to teh definition or provider
+      implementation!
+    """
+    properties {
+
+      input {
+        title = Input
+        description = "Input arguments as a flat dictionary"
+        type = object
+      }
+
+      output {
+        title = Output
+        description = "Output arguments as a flat dictionary"
+        type = object
+        output = true
+      }
+
+      toFind {
+        title = To Find
+        description = "Names of the symbols the query is to search for"
+        type = array
+        items.type = string
+      }
+
+      query {
+        title = "Query"
+        description = "Search query expression (datalog)"
+        type = string
+      }
+
+    }
+  }
+
+  Noop {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "No-op resource"
+    description = """
+      A virtual resource implementing a holder for arbitrary reusable data. Useful in templates where two or more
+      resources need a common set of data but we want to fetch/compute such data only once.
+    """
+    properties {
+
+      data {
+        title = Data
+        description = "Data dictionary. Its content is left to a template or the creator to fill"
+        type = object
+        updatable = true
+      }
+
+    }
+  }
+
+  WebCallout {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Web Callout"
+    description = """
+      A virtual resource capable of calling out to an HTTP server on activate/terminate.
+
+      This type is experimental. In the future, backwards incompatible changes may be made to the definition or provider
+      imlementation!
+    """
+    properties {
+
+      onCreate {
+        title = "On-Activate Callout"
+        description = "Data defining the callout"
+        type = object
+        optional = true
+        properties {
+          method {
+            type = string
+
+            // HEAD and OPTIONS not supported by provider implementation
+            enum = ["GET", "PUT", "PATCH", "POST", "DELETE" ]
+          }
+          url.type = string
+          data {
+            type = object
+            optional = true
+          }
+        }
+      }
+
+      onTerminate {
+        title = "On-Terminate Callout"
+        description = "Data defining the callout"
+        type = object
+        optional = true
+        properties {
+          method {
+            type = string
+
+            // HEAD and OPTIONS not supported by provider implementation
+            enum = [ "GET", "PUT", "PATCH", "POST", "DELETE" ]
+          }
+          url.type = string
+          data {
+            type = object
+            optional = true
+          }
+        }
+      }
+
+      onCreateOutput {
+        title = "Output data from onCreate call"
+        description = """
+        This will contain the JSON data obtained from the onCreate callout, or an empty object if none was provided.
+        If there was output provided, but it could not be parsed to a JSON object, the original message body and the
+        parser error outout will be provided as "body" and "jsonParseException" attributes of onCreateOutput,
+        respectively.
+        """
+        type = object
+        output = true
+      }
+
+    }
+  }
+
+  RandomString {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Random String"
+    description = """
+      A virtual resource that generates a random string of arbitrary length.
+    """
+    properties {
+
+      value {
+        title = Value
+        description = "The generated random string value"
+        type = string
+        output = true
+      }
+
+      length = {
+        title = Length
+        description = "The desired length of the string"
+        type = integer
+        default = 32
+        minimum = 1
+        maximum = 256
+        optional = true
+        updatable = false
+      }
+
+      format = {
+        title = Format
+        description = "The desired format of the string"
+        type = string
+        enum = ["hex", "hexadecimal", "base64", "decimal", "alphanumeric"]
+        default = hexadecimal
+        optional = true
+        updatable = false
+      }
+
+    }
+  }
+
+  Monitor {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "Monitor"
+    description = """
+      A virtual resource capable of monitoring a message bus event stream and sending a message to a destination
+      when a certain event is seen.
+    """
+    properties {
+
+      topic {
+        title = "Event bus topic"
+        description = "The event bus topic to be monitored. (e.g. bp.ra.v1.alarms)"
+        type = string
+      }
+
+      eventType {
+        title = "Event type"
+        description = "Optional event bus event type to filter on. (e.g. bp.v1.AlarmEvent)"
+        type = string
+        optional = true
+      }
+
+      condition {
+        title = "Event condition"
+        description = "The condition logic to monitor on the received events. (e.g. event:$.severity == \"MAJOR\")"
+        type = string
+      }
+
+      actionInfo {
+        title = "Action"
+        description = "Messaging action information used when an incoming event satisfies the policy conditions."
+        type = object
+        default = {}
+        properties {
+          transport {
+            title = "Message transport"
+            description = "DEPRECATED: The message transport protocol to use"
+            type = string
+            enum = ["HTTP"]
+            optional = true
+          }
+
+          // Note: In order to keep httpTransportInfo as optional it can not have any defaults (limitation seen in 16.06)
+          //       In order to remove a default you must set it to optional to be backwards compatible. Other validation
+          //       must then catch if the field is truly required.
+          httpTransportInfo {
+            title = "HTTP message transport information"
+            description = "Required information to send an HTTP message."
+            type = object
+            optional = true
+            default = {}
+            properties {
+              method {
+                title = "HTTP method"
+                description = "The HTTP method for HTTP message"
+                type = string
+                enum = ["POST", "PATCH", "PUT", "DELETE"]
+                optional = true   // default = "PATCH"
+              }
+
+              url {
+                title = "HTTP URL"
+                description = "The destination URL for HTTP message"
+                type = string
+                format = url
+                optional = true  // keep UI-schema optional parent object happy
+              }
+
+              headers {
+                title = "HTTP Headers"
+                description = "The destination URL for HTTP message"
+                type = array
+                optional = true
+                items = {
+                  type = object
+                  properties {
+                    name {
+                      title = "HTTP header name"
+                      description = "The HTTP header name"
+                      type = string
+                    }
+
+                    value {
+                      title = "HTTP header content"
+                      description = "The HTTP header content"
+                      type = string
+                    }
+                  }
+                }
+              }
+
+              body {
+                title = "HTTP Body"
+                description = "The HTTP message body content"
+                type = object
+                optional = true
+                properties {
+                  contentType {
+                    title = "Content-Type"
+                    description = "Value of HTTP Content-Type"
+                    type = string
+                    optional = true  // default = "application/json"
+                  }
+
+                  contents {
+                    title = "Contents"
+                    description = "Body Contents. For an application/json contentType is a well formed JSON object."
+                    type = string
+                    optional = true  // default = "{}"
+                  }
+                }
+              }
+            }
+          }
+
+          eventTransportInfo {
+            title = "Event message transport information"
+            description = "Required information to send an 'event' on event bus."
+            type = object
+            optional = true
+            default = {}
+            properties {
+              topic {
+                title = "Event bus topic"
+                description = "The event bus topic to send the event on (e.g. bp.ra.v1.alarms)"
+                type = string
+                optional = true  // keep UI-schema optional parent object happy
+              }
+
+              eventType {
+                title = "Event Type"
+                description = "Value of event._type entry for the event (e.g. bp.v1.AlarmEvent)."
+                type = string
+                optional = true  // keep UI-schema optional parent object happy
+              }
+
+              contents {
+                title = "Contents"
+                description = """
+                  A well formed JSON object containing the 'event' portion of a message queue event message
+                  (i.e. does not contain version or header fields of an event). The _type field will be added
+                  automatically from the eventType setting.
+                  e.g. {\"key1\": \"value1\", \"key2\": \"value2\"}
+                """
+                type = string
+                optional = true  // keep UI-schema optional parent object happy
+              }
+
+              partitionKey {
+                title = "Partition Key"
+                description = "A string describing the partition key for the Kafka topic"
+                type = string
+                optional = true  // keep UI-schema optional parent object happy
+              }
+            }
+          }
+        }
+      }
+
+      policyInfo {
+        title = "Policy Info"
+        description = "Policy ID and Condition ID used in policy manager to monitor event bus"
+        type = object
+        output = true
+        properties {
+          policyId {
+            title = "Policy ID of monitor policy"
+            description = "The policy ID of the policy used in monitoring"
+            type = string
+          }
+
+          conditionId {
+            title = "Condition ID used by monitor policy"
+            description = "The condition ID used by policy for monitoring"
+            type = string
+          }
+        }
+      }
+    }
+  }
+
+}

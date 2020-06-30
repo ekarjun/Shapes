@@ -1,0 +1,79 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firefly VNF resource type definition"
+package     = juniper
+version     = "1.0"
+description = "This document defines the Firefly VNF resource type connected to VLAN networks."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  FireflyVnf = juniper.resourceTypes.FireflyVnf
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  FireflyVnfVlan {
+    derivedFrom = FireflyVnf
+    title = Firefly Appliance (VNF)
+    description = """
+      Firefly resource holding Juniper Firefly type of VNF creating new networks and VLANs.
+    """
+
+    properties {
+
+      ge-001-VlanId {
+        title = "ge-0/0/1 VLAN Id"
+        description = "VLAN id associated with ge-0/0/1"
+        type = integer
+        format = vlan-id
+      }
+
+      ge-001-Prefix {
+        title = "ge-0/0/1 Subnet"
+        description = "Network prefix in CIDR format"
+        type = string
+        format = ipv4-prefix
+      }
+
+      ge-002-VlanId {
+        title = "ge-0/0/2 VLAN Id"
+        description = "VLAN id associated with ge-0/0/2"
+        type = integer
+        format = vlan-id
+      }
+
+      ge-002-Prefix {
+        title = "ge-0/0/2 Subnet"
+        description = "Network prefix in CIDR format"
+        type = string
+        format = ipv4-prefix
+      }
+
+      // Overriding it as optional
+      ge-001-Net {
+        title = "ge-0/0/1 Network"
+        description = "UUID of the network for the Firefly VNF ge-0/0/1 interface"
+        type = string
+        optional = true
+      }
+
+      // Overriding it as optional
+      ge-002-Net {
+        title = "ge-0/0/2 Network"
+        description = "UUID of the network for the Firefly VNF ge-0/0/2 interface"
+        type = string
+        optional = true
+      }
+
+    }
+
+    requirements {
+
+    }
+
+    capabilities {
+
+    }
+
+  }
+}

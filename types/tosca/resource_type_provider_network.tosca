@@ -1,0 +1,48 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Provider Network resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the OpenStack Provider Network resource type."
+authors     = [ "Nuri Bal (nuri.bal@cyaninc.com)" ]
+
+imports {
+  Network = tosca.resourceTypes.Network
+}
+
+resourceTypes {
+
+  ProviderNetwork {
+    derivedFrom = Network
+    title = "ProviderNetwork"
+    description = """
+      A virtual network resource type mapping to a specific physical network in the data center.
+    """
+
+    properties {
+
+      networkType {
+        title = "OpenStack provider:network_type"
+        description = "Specifies the physical mechanism by which the virtual network is realized"
+        type = string
+        enum = [ "flat", "local", "vlan", "gre", "vxlan" ]
+      }
+
+      physicalNetwork {
+        title = "OpenStack provider:physical_network"
+        description = """
+          Specifies the name of the physical network over which the virtual network is realized
+          for flat and VLAN networks.
+        """
+        type = string
+      }
+
+      segmentationId {
+        title = "OpenStack provider:segmentation_id"
+        description = "Specifies the VLAN ID on the physical network that realizes the virtual network for VLAN networks"
+        type = integer
+      }
+
+    }
+
+  }
+}

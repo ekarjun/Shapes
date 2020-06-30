@@ -1,0 +1,157 @@
+{
+    "type": "detail",
+    "version": "2.0",
+    "cells": [{
+        "children": [{
+            "model": "label"
+        }, {
+            "model": "description"
+        }, {
+            "model": "autoClean"
+        }],
+        "label": "General"
+    }, {
+        "label": "Deployment",
+        "children": [{
+            "model": "properties.providerId",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain to host this MZone.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.keyName",
+            "label": "Key pair",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "valueAttribute": "label",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.KeyPair"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.templateUrlDir",
+            "label": "Template download server",
+            "description": "Please enter the download server URL for OpenStack templates (http://10.70.162.8:9090/vcm_orch)."
+        }]
+    }, {
+        "label": "Network",
+        "children": [{
+            "model": "properties.publicNet",
+            "label": "Public network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./providerId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.privateNet",
+            "label": "Private network",
+            "description": "",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./providerId}"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.utranNet",
+            "label": "Local network",
+            "placeholder": "Please select a Resource Domain",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Network",
+                        "domainId": "${./providerId}"
+                    }
+                }
+            }
+        }]
+    }, {
+        "label": "DNS",
+        "children": [{
+            "model": "properties.dnsDomain"
+        }, {
+            "model": "properties.records",
+            "transforms": {
+                "write": [{
+                    "from": "\n",
+                    "to": ",",
+                    "global": true
+                }],
+                "read": [{
+                    "from": ",",
+                    "to": "\n",
+                    "global": true
+                }]
+            }
+        }, {
+            "model": "properties.upstreamDnsServer"
+        }]
+    }, {
+        "label": "WAN",
+        "children": [{
+            "model": "properties.wanProviderId",
+            "label": "Resource domain",
+            "description": "Please select the resource Domain to host the WAN connectivity of this MZone.",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "domain"
+                }
+            }
+        }, {
+            "model": "properties.aEndPort",
+            "label": "A-End port",
+            "placeholder": "Please select an A-end port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Port"
+                    }
+                }
+            }
+        }, {
+            "model": "properties.aEndBwProfile",
+            "label": "Z-End bandwidth profile",
+            "renderer": {
+                "name": "select"
+            }
+        }, {
+            "model": "properties.zEndPort",
+            "label": "Z-End port",
+            "placeholder": "Please select an Z-end port",
+            "renderer": {
+                "name": "select",
+                "options": {
+                    "modelType": "resource",
+                    "query": {
+                        "resourceTypeId": "tosca.resourceTypes.Port"
+                    }
+                }
+            }
+        }]
+    }]
+}

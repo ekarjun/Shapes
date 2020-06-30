@@ -1,0 +1,29 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual Link resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the VirtualLink resource type."
+authors     = [ "Darren Dowker (ddowker@ciena.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+
+  VirtualLink {
+    derivedFrom = Root
+    abstract = true
+    title = "Virtual Link (VL)"
+    description = """
+      A virtual link connecting two or more entities.
+    """
+
+    properties {
+    }
+
+    capabilities {
+    }
+
+  }
+}

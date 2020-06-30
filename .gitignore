@@ -1,0 +1,18 @@
+# Python bytecode files and build products.
+*.py[co]
+__pycache__/
+*.egg-info/
+
+# Temporary files from common editors
+*~
+[._]*.sw[po]
+~*
+tags
+TAGS
+
+# Other stuff that probably shouldn't be checked in:
+*.log
+*.tmp
+*.bak
+*.cache
+.DS_Store

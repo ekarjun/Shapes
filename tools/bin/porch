@@ -1,0 +1,6 @@
+#!/bin/bash
+
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+tool_dir=$(dirname $script_dir)
+python $tool_dir/lib/porch.py "$@"
+

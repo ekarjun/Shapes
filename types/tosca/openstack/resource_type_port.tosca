@@ -1,0 +1,73 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet port resource type definition"
+package     = openstack
+version     = "1.0"
+description = "This document defines the OpenStack Port resource type."
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  EthernetPort = tosca.resourceTypes.EthernetPort
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Port {
+    derivedFrom = EthernetPort
+    title = OpenStack Port
+    description = """
+      OpenStack Port resource.
+    """
+
+    properties {
+
+      network = {
+        title = "Network"
+        description = """
+          A port requires a network to be created first
+        """
+        type = string
+        optional = true
+      }
+
+      vnicType {
+        title = "Virtual NIC Type"
+        description = """
+          Specify the NIC type this port.  The current OpenStack values are "normal", "direct"
+          and "MacVTap". This is optional property with the default being "normal".
+        """
+        type = string
+        enum = ["normal", "direct", "MacVTap"]
+        default = "normal"
+      }
+
+
+      securityGroups {
+        title = "Security Groups"
+        description = "Security groups associated with this port"
+        type = array
+        optional = true
+        items.type = string
+      }
+
+      securityEnabled {
+        title = "Security Enabled"
+        description = """
+          Specify whether security is enabled on this port. This is optional and should only
+          be specified when Neutron port security extension is enabled on the OpenStack server
+        """
+        type = boolean
+        optional = true
+      }
+    }
+
+    requirements {
+      securityGroups {
+        title = "Security Groups"
+        description = "A port uses security groups"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.SecurityGroup ]
+      }
+    }
+  }
+}

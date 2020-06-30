@@ -1,0 +1,80 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Ethernet port resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the EthernetPort resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  Port = tosca.resourceTypes.Port
+  Endpoint = tosca.capabilityTypes.Endpoint
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  EthernetPort {
+    derivedFrom = Port
+    title = Ethernet Port
+    description = """
+      Ethernet Port resource.
+    """
+
+    properties {
+
+      macAddresses {
+        title       = "Mac Addresses of Ethernet Port"
+        description = "Mac Addresses of this Ethernet port"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      ipV4Addresses {
+        title       = "IPv4 Addresses of Ethernet Port"
+        description = "IPv4 Addresses of this Ethernet port"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      ipV6Addresses {
+        title       = "IPv6 Addresses of Ethernet Port"
+        description = "IPv6 Addresses of this Ethernet port"
+        type = array
+        items.type = string
+        optional = true
+      }
+    }
+
+    requirements {
+
+      host {
+        title = "Network"
+        description = "An Ethernet port is hosted by an Ethernet network"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.EthernetNetwork ]
+        maximum = 1
+      }
+
+      subnets {
+        title = "Subnets"
+        description = "An Ethernet port depends on subnets"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.Subnet ]
+      }
+    }
+
+    capabilities {
+
+      access {
+        title = "Server"
+        description = "An Ethernet port provides network access to a Server"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.Server ]
+        maximum = 1
+      }
+    }
+
+  }
+}

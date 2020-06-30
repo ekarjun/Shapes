@@ -1,0 +1,79 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "L2 gateway resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the L2Gateway resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  RemoteAccessible = tosca.resourceTypes.RemoteAccessible
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  NetworkElement = tosca.resourceTypes.NetworkElement
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  L2Gateway {
+    derivedFrom = [ RemoteAccessible, NetworkElement ]
+    title = "Layer 2 Gateway"
+    description = """
+      A network element connecting L2 switching domains in a DC to external L2 domains.
+    """
+
+    properties {
+      flavor {
+        title = "L2 Gateway Type"
+        description = "L2 Gateway Type"
+        type = string
+        enum = [ "Arista OpenStack ML2 VLAN" ]
+      }
+
+      username {
+        title = "Admin Username"
+        description = "L2 Gateway admin name"
+        type = string
+        minimum = 1
+        maximum = 1
+      }
+
+      password {
+        title = "Admin Password"
+        description = "L2 Gateway admin password"
+        type = string
+        minimum = 1
+        maximum = 1
+      }
+    }
+
+    requirements {
+
+      contained {
+        title = "Data Center"
+        description = "A L2 Gateway is contained in a Data Center"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.DataCenter ]
+        minimum = 1
+        maximum = 1
+      }
+
+      vlanPool {
+        title = "VLAN Pool"
+        description = "A L2 Gateway utilizes VLAN pools"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.VlanPool ]
+        minimum = 1
+      }
+    }
+
+    capabilities {
+
+      l2vpns {
+        title = "L2 VPNs"
+        description = "An L2 Gateway hosts L2 VPNs"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.L2Vpn ]
+      }
+    }
+  }
+}

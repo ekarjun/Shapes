@@ -1,0 +1,25 @@
+"$schema" = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title = "Base session template resource type definition"
+package = vss
+version = "1.0"
+description = "This document defines the base session template resource.  The RA is expected to extend this defininition with authentication and connection information."
+authors = ["Kerry Neef (kerry.neef@cyaninc.com)"]
+
+imports {
+  Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+
+  SessionProfile {
+    derivedFrom = Root
+    title = "Session Profile"
+    description = """
+    Supplies information needed to establish a session to a network function device.
+    """
+
+    properties {
+    }
+  }
+}
+

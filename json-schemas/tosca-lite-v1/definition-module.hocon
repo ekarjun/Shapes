@@ -1,0 +1,191 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite Definition Module"
+
+type        = object
+
+required = [ "$schema", title, package, version, description ]
+
+properties {
+
+  "$schema" {
+    description = "schema reference to this schema"
+    enum        = [ "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#" ]
+  }
+
+  title {
+    description = "Descriptive name of this definition module"
+    type        = string
+  }
+
+  description {
+    description = "Textual description of the module (optional)"
+    type        = string
+  }
+
+  package {
+    description = "Namespace prefix expressed as java style dot notated object path"
+    oneOf = [ { "$ref" = "#/definitions/objectPath" } ]
+  }
+
+  version {
+    description = "Version of this definition module, inherited by all type artifacts defined in it"
+    type        = string
+  }
+
+  authors {
+    description = "List of authors. We suggest to include name and email at least."
+    type        = array
+    items {
+      type      = string
+    }
+  }
+
+  imports {
+    description = "List of imported namespaces with their aliases"
+    type        = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref": "#/definitions/objectPath"
+      }
+    }
+    additionalProperties = false
+  }
+
+  includes {
+    description = "Included sub-modules with their aliases"
+    type        = object
+    patternProperties {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        type = object
+        properties {
+          format.enum = [ hocon, json, yaml, tosca10, cyantosca ]
+          source = { "$ref" = "#/definitions/objectPath" }
+        }
+      }
+    }
+    additionalProperties = false
+  }
+
+  propertyTypes {
+    description = "Reusable property type definitions"
+    type        = object
+    additionalProperties = false
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/property#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  capabilityTypes {
+    description = "Capability type definitions"
+    type        = object
+    additionalProperties = false
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/capability-type#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  relationshipTypes {
+    description = "Relationship type definitions"
+    type        = object
+    additionalProperties = false
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/relationship-type#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  resourceTypes {
+    description = "Resource type definitions"
+    type        = object
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/resource-type#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  alarmTypes {
+    description = "Alarm type definitions"
+    type        = object
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/alarm-type#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  kpiTypes {
+    description = "Key Performance Indicator (Metric) type definitions"
+    type        = object
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/kpi-type#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  serviceTemplates {
+    description = "Service template definitions"
+    type        = object
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/service-template#"
+      }
+    }
+    additionalProperties = false
+  }
+
+  discoveryTemplates {
+    description = "Discovery template definitions"
+    type        = object
+    patternProperties = {
+      "^[a-zA-Z][-_a-zA-Z0-9]*$" {
+        "$ref" = "http://cyaninc.com/json-schemas/tosca-lite-v1/discovery-template#"
+      }
+    }
+    additionalProperties = false
+  }
+
+}
+
+additionalProperties = false
+
+definitions {
+
+  objectName {
+    type = string
+    pattern = "^[a-zA-Z][_a-zA-Z0-9]*$"
+  }
+
+  objectPath {
+    type = string
+    pattern = "^[a-zA-Z][-_a-zA-Z0-9]*(\\.[a-zA-Z][-_a-zA-Z0-9]*)*$"
+  }
+
+  objectPathArray {
+    type = array
+    items {
+      "$ref" = "#/definitions/objectPath"
+    }
+  }
+
+  ref {
+    type = object
+    required = [ ref ]
+    properties.ref = { "$ref": "#/definitions/objectPath" }
+    additionalProperties = false
+  }
+
+}

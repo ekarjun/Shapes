@@ -1,0 +1,165 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Function resource type definition"
+package     = vss
+version     = "1.0"
+description = "This document defines the base network function resource attributes. The RA is expected to extend this definition with more device specific information."
+authors     = [ "Sonny Rasmussen (sorasmus@contractor.ciena.com)" ]
+
+imports {
+    Device = tosca.resourceTypes.Device
+}
+
+resourceTypes {
+
+    NetworkFunction {
+        derivedFrom = Device
+        title = "Network Function"
+        description = """
+
+            NetworkFunction (NF) represents a specialized physical or logical device relating to
+            Network functions. Network Functions includes physical networking equipment, such as 
+            switches, routers and repeaters, but also relates to virtualized network functions, 
+            such as EMSs, virtual routers and virtual switches.
+
+        """
+
+        properties {
+
+            sessionProfile {
+                type = string
+                title = "Session Profile"
+                description = "Profile providing authentication and connection information used to establish a session with the network function."
+                optional = false
+                updatable = true
+            }
+
+            ipAddress {
+                type = string
+                title = "IPAddress"
+                description = "DCN IP Address, The IP address or hostname of the node"
+                optional = false
+                updatable = true
+            }
+
+            resourceType {
+                type = string
+                title = "Adapter Resource Type"
+                description = """
+                    Network Function Product Name.  This value will be set by the RA to the type of equipment connected
+                    to when the session is established.  The user can set this to an expected value to detect equipment
+                    mismatch situations.
+                """
+                optional = true
+            }
+
+            typeGroup {
+                type = string
+                title = "TypeGroup"
+                description = """
+                    Network Function Product Family.  This value is supplied by the session profile and populated by
+                    the RA after session creation along with the other device properties.
+                """
+                config = false
+            }
+
+            authentication {
+                type = object
+                title = "Session Authentication Parameters."
+                description = """
+                    This property records the authentication parameters used to establish the communication session
+                    with the physical equipment representing the network function.
+                """
+                config = false
+            }
+
+            connection {
+                type = object
+                title = "Session Connection Parameters."
+                description = """
+                    This property records the connection parameters used to establish the communication session with
+                    the physical equipment representing the network function.
+                """
+                config = false
+            }
+
+            deviceVersion {
+                type = string
+                title = "Device Version"
+                description = "Device version"
+                config = false
+            }
+
+            serialNumber {
+                type = string
+                title = "Serial Number"
+                description = "Serial number"
+                config = false
+            }
+
+            swImage {
+                type = string
+                title = "Software Image"
+                description = "Software image"
+                config = false
+            }
+
+            swVersion {
+                type = string
+                title = "Software Version"
+                description = "Software version"
+                config = false
+            }
+
+            swType {
+                type = string
+                title = "Software Type"
+                description = "Software type"
+                config = false
+            }
+
+            type {
+                type = string
+                title = "Type"
+                description = "Type"
+                config = false
+            }
+
+            userLabel {
+                type = string
+                title = "User Label"
+                description = "User label"
+                optional = true
+            }
+
+            nativeEMSName {
+                type = string
+                title = "Native EMS Name"
+                description = "Native EMS name"
+                config = false
+            }
+
+            alarmStatus {
+                title = "AlarmStatus"
+                type = string
+                description = "Alarm status"
+                config = false
+                enum = [CLEARED, INDETERMINATE, WARNING, MINOR, MAJOR, CRITICAL, PENDING]
+            }
+
+            communicationState {
+                title = "CommunicationState"
+                type = string
+                description = "Communication state"
+                config = false
+                enum = [AVAILABLE, UNAVAILABLE]
+            }
+
+            inSync {
+                title = "InSyncState"
+                type = boolean
+                description = "In sync state"
+                config = false
+            }
+        }
+    }
+}

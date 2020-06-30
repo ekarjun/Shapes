@@ -1,0 +1,217 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Appliance"
+package     = versa
+version     = "1.0"
+description = "This document defines resource type Appliance"
+authors     = [ "Jay Hsu (jhsu@cyaninc.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+  Vnf = tosca.resourceTypes.VirtualNetworkFunction
+}
+
+resourceTypes {
+
+  Appliance {
+    derivedFrom = Vnf
+    title = "Versa Appliance"
+    description = """
+      This resource type represents a Versa Appliance.
+    """
+
+    properties {
+      svcNodeGroups {
+        title = "Service Node Groups"
+        description = "Service node groups for this appliance"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      externalNetworks {
+        title = "External Networks"
+        description = "External networks this appliance connects to"
+        type = array
+        items.type = string
+        optional = true
+      }
+
+      vappId {
+        title = "Virtual Appliance ID"
+        description = "Virtual appliance ID for this appliance"
+        type = string
+        optional = true
+      }
+
+      networkConnectOption {
+        title = "Network Connectivity Option"
+        description = "Network connectivity option for this appliance"
+        type = string
+        enum = [ "ConnectToAll" ]
+      }
+
+      ipAddress {
+        title = "IP Address"
+        description = "Primary IP address for this appliance"
+        type = string
+        output = true
+      }
+
+      haPeerIpAddress {
+        title = "HA Peer IP Address"
+        description = "IP Address of Appliance HA Peer"
+        type = string
+        optional = true
+        output = true
+      }
+
+      haPeer {
+        title = "HA Peer Appliance"
+        description = "Name of Appliance HA Peer"
+        type = string
+        optional = true
+        output = true
+      }
+
+      haPeerPreference {
+        title = "HA Peer Preference"
+        description = "Preference of Master Role in HA Peer"
+        type = string
+        optional = true
+        output = true
+        enum = [
+          "local-appliance"
+          "remote-appliance"
+        ]
+      }
+
+      slot {
+        title = "Slot"
+        description = "Slot ID assigned for this appliance"
+        type = integer
+        output = true
+      }
+
+      vmid {
+        title = "VM ID"
+        description = "VM ID in the managed domain for this appliance"
+        type = string
+        output = true
+      }
+
+      customerId {
+        title = "Customer ID"
+        description = Customer ID that creates this appliance
+        type = string
+      }
+
+      cmsOrg {
+        title = "CMS Organization ID"
+        description = "ID of the Cloud Management System this Application is created"
+        type = string
+        optional = true
+      }
+
+      orgVdc {
+        title = "Virtual DataCenter ID"
+        description = "Virtual DataCenter ID on the Cloud Organization System"
+        type = string
+        optional = true
+      }
+
+      cmsConnector {
+        title = "CMS Connector"
+        description = "Name of the Cloud Management System Connector"
+        type = string
+        output = true
+      }
+
+      vAppTemplateId {
+        title = "Virtual Appliance Template ID"
+        description = "ID of the virtual appliance template this appliance is created from"
+        type = string
+        optional = true
+      }
+
+      customers {
+        title = "Customers"
+        description = "Detail of customers this appliance serves"
+        type = array
+        items.type = object
+        optional = true
+        updatable = true
+      }
+
+      services {
+        title = "Services"
+        description = "Services supported by this appliance"
+        type = array
+        items.type = string
+        output = true
+      }
+
+    }
+
+    requirements {
+      director {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Director
+        ]
+      }
+      VMs {
+        type = Container
+        resourceTypes = [
+          tosca.resourceTypes.VirtualMachine
+        ]
+      }
+      haMaster {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+        minimum = 0
+      }
+    }
+
+    capabilities {
+      ports {
+        type = Container
+        resourceTypes = [
+          tosca.resourceTypes.Port
+        ]
+      }
+      VRs {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.VirtualRouter
+        ]
+      }
+      haSlave {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Appliance
+        ]
+      }
+      FirewallServices {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.Firewall
+        ]
+      }
+      NATServices {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.NAT
+        ]
+      }
+      IpSecVpns {
+        type = Container
+        resourceTypes = [
+          versa.resourceTypes.IpSecVpn
+        ]
+      }
+    }
+
+  }
+}

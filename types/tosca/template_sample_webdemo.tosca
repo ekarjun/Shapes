@@ -1,0 +1,139 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample type and template to demo web callouts, mysql callouts, etc."
+package     = tosca
+version     = "1.0"
+description = """
+TO BE ADDED
+"""
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)"
+]
+
+resourceTypes {
+
+  WebDemoService {
+    title = "Demo Service"
+    description = "To demo MySQL and Web fetch and Web POST/DELETE callouts"
+    derivedFrom = "tosca.resourceTypes.Root"
+    properties {
+
+      nodeNameA {
+        title = Node Name A
+        description = "Node name which we will use as lookup key in a SQL database"
+        type = string
+      }
+
+      nodeNameZ {
+        title = Node Name Z
+        description = "Node name which we will use as lookup key in a SQL database"
+        type = string
+      }
+
+    }
+  }
+}
+
+serviceTemplates {
+
+  WebDemoService {
+    title = Demo Service Template
+    description = To demo various callouts
+    implements = tosca.resourceTypes.WebDemoService
+
+    // Inherent properties from the implemented VirtualDns type:
+    // - nodeNameA
+    // - nodeNameZ
+    // -
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+
+      lookup1 {
+        title = "Resolve node names"
+        type = tosca.resourceTypes.Noop
+        properties {
+          data {
+
+            nodeIdA {
+              fetch = [
+                { renderTemplate = [
+                    {label = {getParam = nodeNameA}},
+                    "mysql://root:root@localhost/mysqltest?SELECT * FROM mes WHERE label='{{label}}' LIMIT 1"
+                ]},
+                "$[0].id"
+                true
+              ]
+            }
+
+            nodeIdZ {
+              fetch = [
+                { renderTemplate = [
+                    {label = {getParam = nodeNameZ}},
+                    "mysql://root:root@localhost/mysqltest?SELECT * FROM mes WHERE label='{{label}}' LIMIT 1"
+                ]},
+                "$[0].id",
+                true
+              ]
+            }
+          }
+        }
+      }
+
+      lookup2 {
+        title = "Resolve ports (web based)"
+        type = tosca.resourceTypes.Noop
+        properties {
+          data {
+            paramA = { getAttr = [ lookup1, data.nodeIdA ] }
+            paramZ = { fetch = [
+              "http://127.0.0.1:8000/",
+              "$.items[0].value",
+              true
+            ]}
+          }
+        }
+      }
+
+      aEnd {
+        type = tosca.resourceTypes.WebCallout
+        properties {
+          onCreate {
+            method = POST
+            url = "http://127.0.0.1:8000/"
+            data = {
+              id    = { getAttr = [ lookup1, data.nodeIdA ] }
+              label = { getParam = nodeNameA }
+              value = { getAttr = [ lookup2, data.paramZ ] }
+            }
+          }
+          onTerminate {
+            method = DELETE
+            url = { join = [ "", "http://127.0.0.1:8000/", { getAttr = [ lookup1, data.nodeIdA ] } ] }
+          }
+        }
+      }
+
+      zEnd {
+      type = tosca.resourceTypes.WebCallout
+        properties {
+          onCreate {
+            method = POST
+            url = "http://127.0.0.1:8000/"
+            data = {
+              id    = { getAttr = [ lookup1, data.nodeIdZ ] }
+              label = { getParam = nodeNameZ }
+              value = { getAttr = [ lookup2, data.paramZ ] }
+            }
+          }
+          onTerminate {
+            method = DELETE
+            url = { join = [ "", "http://127.0.0.1:8000/", { getAttr = [ lookup1, data.nodeIdZ ] } ] }
+          }
+        }
+      }
+    }
+  }
+}

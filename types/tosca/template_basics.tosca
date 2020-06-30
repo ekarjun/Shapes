@@ -1,0 +1,20 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic templates"
+package     = "tosca"
+version     = "1.0"
+description = "This document defines the built-in basic service templates."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+serviceTemplates {
+
+  Root {
+    title = Root
+    description = """
+      This is the root from which all service templates shall be derived, directly or
+      indirectly
+    """
+    implements = tosca.resourceTypes.Root // to satisfy the schema constraints
+  }
+
+}
+

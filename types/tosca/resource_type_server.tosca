@@ -1,0 +1,202 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic server resource type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Server resource type."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+imports {
+  RemoteAccessible = tosca.resourceTypes.RemoteAccessible
+  NetworkAttachable = tosca.resourceTypes.NetworkAttachable
+  Endpoint = tosca.capabilityTypes.Endpoint
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  Server {
+    derivedFrom = [ RemoteAccessible, NetworkAttachable ]
+    abstract = true
+    title = Server
+    description = """
+      Server resource, which can be either virtual (VM) or physical (real iron server).
+    """
+
+    properties {
+
+      numCpus {
+        title       = "CPUs/vCPUs"
+        description = "Number of (actual or virtual) CPUs associated with the Server resource."
+        type        = integer
+        minimum     = 1
+        optional    = true
+      }
+
+      memSize {
+        title       = "Memory Size"
+        description = "Size of memory, in Megabytes (MB), available to applications running on the Server resource."
+        type        = integer
+        minimum     = 0
+        units       = MB
+        optional    = true
+      }
+
+      diskSize {
+        title       = "Disk Size"
+        description = "Size of the local disk, in Gigabytes (GB), available to applications running on the Server resource."
+        type        = integer
+        minimum     = 0
+        units       = GB
+        optional    = true
+      }
+
+      osArch {
+        title       = "OS Architecture"
+        description = "The host operating system (OS) architecture"
+        type        = string
+        enum        = [ "x86_32", "x86_64" ]
+        optional    = true
+      }
+
+      osType {
+        title       = "OS Type"
+        description = "The host operating system (OS) type"
+        type        = string
+        optional    = true
+      }
+
+      osDistribution {
+        title       = "OS Distribution"
+        description = "The host operating system (OS) distribution"
+        type        = string
+        optional    = true
+      }
+
+      osVersion {
+        title       = "OS Version"
+        description = "The host operating system (OS) distribution"
+        type        = string
+        optional    = true
+      }
+
+      interfaces {
+        title       = "Network Interfaces"
+        description = "Network interfaces of the server, as a list of IP addresses"
+        type        = array
+        items.type  = string
+        optional    = true
+      }
+
+    }
+
+    // TODO non-input (but static) properties???
+    // ...
+
+    // TODO how to express managed attributes (that do not need operations, OR shall
+    // it always be done through operations, such as configure???
+    // ...
+
+    // TODO
+
+    requirements {
+
+      ports {
+        title = "Ether Ports"
+        description = "A server requires Ethernet ports"
+        type = Endpoint
+        resourceTypes = [ tosca.resourceTypes.EthernetPort ]
+      }
+
+      securityGroups {
+        title = "Security Groups"
+        description = "A server may use a security group"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.SecurityGroup ]
+      }
+
+      image {
+        title = "Image"
+        description = "A server requires an image"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.Image ]
+        minimum = 1
+        maximum = 1
+      }
+
+      keyPair {
+        title = "KeyPair"
+        description = "A server may use a key pair"
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.KeyPair ]
+      }
+    }
+
+    capabilities {
+      host {
+        type = Container
+        resourceTypes = [ tosca.resourceTypes.SoftwareComponent ]
+      }
+    }
+
+    resourceStates {
+
+//      building {
+//        title = Building
+//        description = "The resource is currently being built"
+//      }
+//
+      failed {
+        title = Failed
+        description = "The resource is failed (see reason property for further info)"
+      }
+
+      started {
+        title = Started
+        description = "The resource is running"
+      }
+
+      terminating {
+        title = Terminating
+        description = "The resource is being terminated"
+      }
+
+      stopped {
+        title = Stopped
+        description = "The resource has been stopped"
+      }
+
+      terminated {
+        title = Terminated
+        description = "The resource has been terminated"
+      }
+
+    }
+
+    interfaces {
+
+      stop {
+        title = Stop
+        description = "Stop this resource"
+        // TODO pre-requisites?
+      }
+
+      start {
+        title = Start
+        description = "Start this stopped resource"
+        // TODO pre-requisites?
+      }
+
+      terminate {
+        title = Terminate
+        description = "Terminate this resource"
+        // TODO pre-requisites?
+      }
+
+      reboot {
+        title = Reboot
+        description = "Reboot this resource"
+      }
+
+    }
+  }
+}

@@ -1,0 +1,37 @@
+id          = "http://cyaninc.com/json-schemas/tosca-lite-v1/file-artifact#"
+"$schema"   = "http://cyaninc.com/json-schemas/jsonschema.metaschema.draft-04-strict.json#"
+description = "Schema for TOSCA Lite file artifact"
+
+type        = object
+
+required    = [ url ]
+
+properties {
+
+  url {
+    description = "URL to fetch the file from"
+    anyOf = [
+      { type = string },
+      { type = object } // TODO refine this to a funcion dictionary
+    ]
+  }
+
+  md5 {
+    description = "MD-5 checksum of the file"
+    type = string
+    default = ""
+  }
+
+  sha1 {
+    description = "SHA-1 checksum of the file"
+    type = string
+    default = ""
+  }
+
+  description {
+    description = "Description of the purpose of the file"
+    type = string
+    default = ""
+  }
+
+}

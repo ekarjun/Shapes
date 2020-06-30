@@ -1,0 +1,29 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Virtual Network Function Manager abstract type definition"
+package     = tosca
+version     = "1.0"
+description = "This document defines the Virtual Network Function Manager abstract type."
+authors     = [ "Torin Sandall (tsandall@cyaninc.com)" ]
+
+imports {
+  Root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+
+  VNFManager {
+    derivedFrom = Root
+    abstract = true
+    title = "VNF Manager"
+    description = """
+    A VNF Manager is responsible for VNF lifecycle management (e.g. instantiation, update, query, scaling, termination).
+    """
+
+    properties {
+    }
+
+    capabilities {
+    }
+
+  }
+}

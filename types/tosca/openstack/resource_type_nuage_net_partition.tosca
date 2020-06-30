@@ -1,0 +1,43 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "OpenStack Nuage Net Partition resource type definition"
+package     = openstack
+version     = "1.0"
+description = "This document defines the OpenStack Nuage NetPartition resource type."
+authors     = [ "Darren Dowker (ddowker@ciena.com)" ]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+}
+
+resourceTypes {
+
+  NuageNetPartition {
+    derivedFrom = tosca.resourceTypes.Root
+    title = "OpenStack Nuage NetPartition"
+    description = """
+      A Nuage Network Partition associated with a Nuage Enterprise.
+    """
+
+    properties {
+
+      name {
+        title = "Network Partition Name"
+        description = "Nuage Enterprise name that represents the Network Partition"
+        type = string
+      }
+
+      osNetPartitionId {
+        title = "OpenStack Nuage Network Partition ID"
+        description = "OpenStack Nuage Network Partition ID."
+        type = string
+        output = true
+      }
+
+    }
+
+    requirements {
+
+    }
+
+  }
+}

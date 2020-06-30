@@ -1,0 +1,330 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "A sample template for a VM-based DNS server"
+package     = tosca
+version     = "1.0"
+description = """
+Implements: VirtualDnsInStack
+This implementation is based on a Heat Stack that creates a VM and a few additional OpenStack resources.
+"""
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)"
+]
+
+imports {
+  VirtualDns = tosca.resourceTypes.VirtualDns
+  VirtualMachine = tosca.resourceTypes.VirtualMachine
+  HeatStack = tosca.resourceTypes.HeatStack
+  Root = tosca.serviceTemplates.Root
+}
+
+serviceTemplates {
+
+  VirtualDnsInStack {
+    title = Virtual DNS in a Heat Stack
+    description = A DNS server deployed via a Heat Stack
+    implements = VirtualDns
+
+    // Inherent properties from the implemented VirtualDns type:
+    // - publicNet
+    // - privateNet
+    // - keyName
+    // - templateUrlDir
+    // - externalDnsServer
+    // - domain
+    // - records
+
+    // Additional template properties:
+    properties {
+    }
+
+    resources {
+      stack {
+        type = HeatStack
+        product {domain = {getDomain {getParam = privateNet}}}
+        properties {
+
+          templateInputArgs = {
+            publicnet = {getProviderResourceId {getParam = publicNet}}
+            network = {getResourceAttr = [{getParam = privateNet}, providerResourceId]} // another way, just for demo
+            keyname = {getParam = keyName}
+            TemplateURLdir = {getParam = templateUrlDir}
+            ExternalDnsServer = {getParam = externalDnsServer}
+            Domain = {getParam = domain}
+            Records = {getParam = records}
+            InstanceType = "m1.large"
+          }
+
+          templateString = """
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "NFVO POC for DNS Service: PowerDNS is a DNS server. This template installs a single-instance PowerDNS deployment using a local MySQL database to store the data.",
+
+  "Parameters" : {
+
+    "publicnet" : {
+      "Description" : "UUID of an existing external network",
+      "Type" : "String"
+    },
+
+    "network" : {
+      "Description" : "UUID of an existing internal network",
+      "Type" : "String"
+    },
+
+    "keyname" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type" : "String"
+    },
+
+    "TemplateURLdir" : {
+      "Description" : "Nested stack template directory reachable by URL",
+      "Type" : "String",
+      "Default" : "http://10.70.162.8:9090/vcm_orch"
+    },
+
+    "ExternalDnsServer" : {
+      "Description" : "IP address of an existing DNS server to enable recursive DNS look-up",
+      "Type" : "String"
+    },
+
+    "Domain" : {
+      "Description" : "First domain name, e.g., example.com (optional)",
+      "Type" : "String",
+      "Default" : ""
+    },
+
+    "Records" : {
+      "Description" : "Comma-separated list of A records in the format <name>:<content>. E.g., 'example.com:1.1.1.1,host1.example.com:2.2.2.2'",
+      "Type" : "String",
+      "Default" : ""
+    },
+
+    "InstanceType" : {
+      "Description" : "WebServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "m1.tiny", "m1.small", "m1.medium", "m1.large", "m1.xlarge" ],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "DBRootPassword": {
+      "Default": "pdns",
+      "NoEcho": "true",
+      "Description" : "Root password for MySQL",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "LinuxDistribution": {
+      "Default": "U12-10",
+      "Description" : "Distribution of choice",
+      "Type": "String",
+      "AllowedValues" : [ "U12-10" ]
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "m1.tiny"    : { "Arch" : "32" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"    : { "Arch" : "64" },
+      "m1.large"   : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" }
+    },
+    "DistroArch2AMI": {
+      "U10"      : { "32" : "U10-i386-cfntools", "64" : "U10-x86_64-cfntools" },
+      "U12-10"   : {                             "64" : "CentOS-6.4-x86_64-cfntools" }
+    }
+  },
+
+  "Resources" : {
+
+    "sg" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access via port 80 plus SSH access",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "icmp", "FromPort" : "-1", "ToPort" : "-1", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "udp", "FromPort" : "53", "ToPort" : "53", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "server": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "services" : {
+              "sysvinit" : {
+                "pdns_server" : { "enabled" : "true", "ensureRunning" : "true" },
+                "mysql"       : { "enabled" : "true", "ensureRunning" : "true" }
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId" : { "Fn::FindInMap" : [ "DistroArch2AMI", { "Ref" : "LinuxDistribution" },
+                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "InstanceType"   : { "Ref" : "InstanceType" },
+        "KeyName"        : { "Ref" : "keyname" },
+        "NetworkInterfaces": [ { "Ref": "port_floating" } ],
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm\n",
+          "rpm -ivh http://rpms.famillecollet.com/enterprise/remi-release-6.rpm\n",
+          "yum -y --disablerepo=\"epel\" update nss\n",
+          "yum -y install php php-mcrypt php-pdo php-mysql pdns pdns-backend-mysql mysql-server httpd\n",
+          "/opt/aws/bin/cfn-init\n",
+
+          "service mysqld start\n",
+          "service httpd start\n",
+          "# Setup MySQL root password and create a user\n",
+          "mysqladmin -u root password '", { "Ref" : "DBRootPassword" }, "'\n",
+          "cat << EOF | mysql -u root --password='", { "Ref" : "DBRootPassword" }, "'\n",
+          "CREATE DATABASE pdns;\n",
+          "GRANT ALL PRIVILEGES ON pdns.* TO \"pdns\"@\"localhost\"\n",
+          "IDENTIFIED BY \"secret\";\n",
+          "FLUSH PRIVILEGES;\n",
+          "USE pdns;\n",
+          "CREATE TABLE domains (\n",
+          "id INT auto_increment,\n",
+          "name VARCHAR(255) NOT NULL,\n",
+          "master VARCHAR(128) DEFAULT NULL,\n",
+          "last_check INT DEFAULT NULL,\n",
+          "type VARCHAR(6) NOT NULL,\n",
+          "notified_serial INT DEFAULT NULL,\n",
+          "account VARCHAR(40) DEFAULT NULL,\n",
+          "primary key (id)\n",
+          ");\n",
+          "CREATE UNIQUE INDEX name_index ON domains(name);\n",
+          "CREATE TABLE records (\n",
+          "id INT auto_increment,\n",
+          "domain_id INT DEFAULT NULL,\n",
+          "name VARCHAR(255) DEFAULT NULL,\n",
+          "type VARCHAR(6) DEFAULT NULL,\n",
+          "content VARCHAR(255) DEFAULT NULL,\n",
+          "ttl INT DEFAULT NULL,\n",
+          "prio INT DEFAULT NULL,\n",
+          "change_date INT DEFAULT NULL,\n",
+          "primary key(id)\n",
+          ");\n",
+          "CREATE INDEX rec_name_index ON records(name);\n",
+          "CREATE INDEX nametype_index ON records(name,type);\n",
+          "CREATE INDEX domain_id ON records(domain_id);\n",
+          "CREATE TABLE supermasters (\n",
+          "ip VARCHAR(25) NOT NULL,\n",
+          "nameserver VARCHAR(255) NOT NULL,\n",
+          "account VARCHAR(40) DEFAULT NULL\n",
+          ");\n",
+          "EXIT\n",
+          "EOF\n",
+
+          "domain='", { "Ref" : "Domain" }, "'\n",
+          "records='", { "Ref": "Records" }, "'\n",
+          "if [ -n \"$domain\" ]; then\n",
+          "  echo \"INSERT INTO domains (name,type) VALUES('$domain','NATIVE');\" > dns.sql;\n",
+          "  echo \"INSERT INTO records (domain_id,name,content,type,ttl,prio) VALUES(1,'$domain','$domain webmaster@$domain','SOA','86400',NULL);\" >> dns.sql\n",
+          "  if [ -n \"$records\" ]; then\n",
+          "    python -c \"records='$records'; FMT='INSERT INTO records (domain_id,name,content,type,ttl,prio) VALUES(1,\\'%s\\',\\'%s\\',\\'A\\',\\'86400\\',NULL);'; print '\\n'.join((FMT % tuple(r.split(':'))) for r in records.split(','))\" >> dns.sql\n",
+          "  fi\n",
+          "fi\n",
+          "mysql -updns -psecret pdns < dns.sql\n",
+
+          "cp -p /etc/pdns/pdns.conf /etc/pdns/pdns.conf.orig\n",
+          "sed -i \"s/allow-recursion=127.0.0.1/allow-recursion=0.0.0.0\\/0/\" /etc/pdns/pdns.conf\n",
+          "sed -i \"s/# recursor=no/recursor=", { "Ref" : "ExternalDnsServer" }, "/\" /etc/pdns/pdns.conf\n",
+          "echo \"launch=gmysql\" >> /etc/pdns/pdns.conf\n",
+          "echo \"gmysql-host=127.0.0.1\" >> /etc/pdns/pdns.conf\n",
+          "echo \"gmysql-port=3306\" >> /etc/pdns/pdns.conf\n",
+          "echo \"gmysql-dbname=pdns\" >> /etc/pdns/pdns.conf\n",
+          "echo \"gmysql-user=pdns\" >> /etc/pdns/pdns.conf\n",
+          "echo \"gmysql-password=secret\" >> /etc/pdns/pdns.conf\n",
+          "/etc/init.d/pdns restart\n",
+
+          "(cd /tmp && wget '", { "Ref" : "TemplateURLdir" }, "'/poweradmin-2.1.6.tgz)\n",
+          "(cd /var/www; tar xzf /tmp/poweradmin-2.1.6.tgz)\n",
+          "mysql -updns -psecret pdns < /var/www/poweradmin-2.1.6/sql/poweradmin-mysql-db-structure.sql\n",
+          "cp /var/www/poweradmin-2.1.6/inc/config-me.inc.php /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_host.*/$db_host = \"localhost\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_port.*/$db_port = \"3306\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_name.*/$db_name = \"pdns\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_user.*/$db_user = \"pdns\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_pass.*/$db_pass = \"secret\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$db_type.*/$db_type = \"mysql\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "sed -i 's/^$session_key.*/$session_key = \"sUpeRt1t1Kul50\";/' /var/www/poweradmin-2.1.6/inc/config.inc.php\n",
+          "rm -fr /var/www/poweradmin-2.1.6/install\n",
+          "mv /var/www/poweradmin-2.1.6/* /var/www/html\n",
+          "service httpd restart\n"
+
+        ]]}}
+      }
+    },
+
+    "port_floating": {
+      "Type": "OS::Neutron::Port",
+      "Properties": {
+        "network_id": { "Ref" : "network" },
+        "security_groups": [ { "Ref": "sg" } ]
+      }
+    },
+
+    "fip": {
+      "Type": "OS::Neutron::FloatingIP",
+      "Properties": {
+        "floating_network_id": { "Ref" : "publicnet" }
+      }
+    },
+
+    "fip_assoc": {
+      "Type": "OS::Neutron::FloatingIPAssociation",
+      "Properties": {
+        "floatingip_id": { "Ref" : "fip" },
+        "port_id": { "Ref" : "port_floating" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+
+    "PublicIP" : {
+      "Value" : { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]},
+      "Description" : "Public IP address of server"
+    },
+
+    "SSHAccess" : {
+      "Value" : { "Fn::Join" : ["", ["ssh -i demo_rsa ec2-user@", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}]] },
+      "Description" : "SSH access to DNS server"
+    },
+
+    "EMSAccess" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]}, "/" ]] },
+      "Description" : "Web EMS access to DNS server"
+    },
+
+    "DNSServer" : {
+      "Value" : { "Fn::GetAtt" : [ "fip", "floating_ip_address" ]},
+      "Description" : "IP address of DNS server"
+    }
+
+  }
+}
+"""
+        }
+      }
+    }
+
+    output {
+      publicAddress = {extract = [{getAttr = [stack, templateOutputArgs]}, "$.PublicIP.value", true]}
+    }
+  }
+}

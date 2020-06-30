@@ -1,0 +1,49 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "HA-protected IP VPN Service"
+package     = versa
+version     = "1.0"
+description = "This document defines the HA-protected IP VPN service as a resource type and a service template"
+authors     = [
+  "Zsolt Haraszti (zsolt@cyaninc.com)",
+  "Nuri Bal (nuri.bal@cyaninc.com)"
+]
+
+imports {
+  Container = tosca.capabilityTypes.Container
+}
+
+serviceTemplates {
+
+  HaIpVpnService {
+
+    title = "HA-protected IP VPN"
+    description = "Implementation template for the service"
+    implements = tosca.resourceTypes.HaIpVpnService
+
+    plans {
+
+      activate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ha_ip_vpn_activate.py"
+      }
+
+      terminate {
+        type = script
+        language = python
+        path = "types/tosca/versa/ha_ip_vpn_terminate.py"
+      }
+
+      update {
+        type = script
+        language = python
+        path = "types/tosca/versa/ha_ip_vpn_update.py"
+      }
+
+    }
+
+    output = {
+      haAppliance = { getAttr = [ activate, haAppliance ] }
+    }
+  }
+}

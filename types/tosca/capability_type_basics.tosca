@@ -1,0 +1,90 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Basic capability types"
+package     = "tosca"
+version     = "1.0"
+description = "This document defines the basic built-in capability types."
+authors     = [ "Zsolt Haraszti (zsolt@cyaninc.com)" ]
+
+capabilityTypes {
+
+  Root {
+    title = Root
+    description = """
+      This is the root from which all capability types shall be derived, directly or
+      indirectly
+    """
+  }
+
+  Feature {
+    derivedFrom = tosca.capabilityTypes.Root
+    title = Feature
+    description = """All feature type capabilities shall be derived from this"""
+  }
+
+  Container {
+    derivedFrom = tosca.capabilityTypes.Feature
+    title = "Container"
+    description = """
+      Represents the capability of containing other things.
+    """
+  }
+
+  Endpoint {
+    derivedFrom = tosca.capabilityTypes.Feature
+    title = "Endpoint"
+    description = """
+    Represents the capability of connecting to another resource.
+    """
+  }
+
+  ServiceEndpoint {
+    derivedFrom = tosca.capabilityTypes.Endpoint
+    title = "Service Endpoint"
+    description = """
+      Represents the capability of providing a service endpoint to which other resources can
+      connect to.
+    """
+
+    properties {
+
+      protocol {
+        title = "Protocol"
+        description = "The name of the protocol, such as http, htps, tcp, udp, ssh, etc."
+        type = string
+      }
+
+      port {
+        title = "Port"
+        description = "Port number"
+        type = integer
+        minimum = 1
+        maximum = 65535
+      }
+
+      secure {
+        title = "Secure"
+        description = "Indicates if the endpoint is a secure endpoint"
+        type = boolean
+        default = false
+      }
+    }
+  }
+
+  DatabaseEndpoint {
+    derivedFrom = tosca.capabilityTypes.ServiceEndpoint
+    title = "Database Service Endpoint"
+    description = """
+      This capability type should be used to indicate database endpoint capability and requirement.
+    """
+
+  }
+
+  Component {
+    derivedFrom = tosca.capabilityTypes.Container
+    title = Component
+    description = """
+      This capability indicates that the resource can be a component in other resources
+    """
+  }
+
+}
