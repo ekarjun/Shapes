@@ -27,6 +27,7 @@ class Activate(Plan):
             "circumference": circumference,
             "totalArea": circleArea,
             "perimeter": perimeter,
-            "polygonArea": polygonArea
+            "polygonArea": polygonArea,
+            "circleArea": circleArea 
         }
 
