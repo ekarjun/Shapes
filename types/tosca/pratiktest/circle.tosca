@@ -12,7 +12,7 @@ authors     = [
 
 resourceTypes {
     circle {
-        title       = "circleResource"
+        title       = "Shape Circle"
         description = "Base template for creating a circle shape"
         derivedFrom = pratiktest.resourceTypes.geometricShape
         properties {

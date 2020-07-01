@@ -12,7 +12,7 @@ authors     = [
 
 resourceTypes {
     polygon {
-        title       = "polygonResource"
+        title       = "Shape polygon"
         description = "Base template for creating a polygon shape"
         derivedFrom = pratiktest.resourceTypes.geometricShape
         properties {
