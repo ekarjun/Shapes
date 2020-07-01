@@ -44,7 +44,7 @@ serviceTemplates{
 
         resources {
             geometricShape {
-                type = geometricShape
+                type = pratiktest.resourceTypes.geometricShape
                 properties {
                     circumference = { getParam = circumference }
                     circleArea = { getParam = circleArea }
