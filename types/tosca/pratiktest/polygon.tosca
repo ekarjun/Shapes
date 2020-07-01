@@ -18,11 +18,11 @@ resourceTypes {
         properties {
             color {
                 type ="string"
-                output = true
+                default = "red"
             }
             sides {
                 type = number
-                output = true
+                default = 5
             }
             polygonArea {
                 type = number
@@ -48,7 +48,6 @@ serviceTemplates{
                 properties {
                     perimeter = { getParam = perimeter }
                     polygonArea = { getParam = polygonArea }
-                    color = { getParam = color }
                 }
             }
         }

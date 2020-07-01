@@ -18,11 +18,11 @@ resourceTypes {
         properties {
             color {
                 type ="string"
-                output = true
+                default = "green"
             }
             radius {
                 type = number
-                output = true
+                default = 8
             }
             circleArea {
                 type = number
@@ -48,7 +48,6 @@ serviceTemplates{
                 properties {
                     circumference = { getParam = circumference }
                     circleArea = { getParam = circleArea }
-                    color = { getParam = color }
                 }
             }
         }
