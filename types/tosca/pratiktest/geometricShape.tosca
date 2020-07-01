@@ -12,7 +12,7 @@ authors     = [
 
 resourceTypes {
     geometricShape {
-        title       = "geometricShapeResource"
+        title       = "shape Parent"
         description = "Base template for creating a geometric shape"
         derivedFrom = tosca.resourceTypes.Root
         properties {
