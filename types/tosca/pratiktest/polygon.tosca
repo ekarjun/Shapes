@@ -46,8 +46,8 @@ serviceTemplates{
             geometricShape {
                 type = pratiktest.resourceTypes.geometricShape
                 properties {
-                    perimeter = { getParam = perimeter }
-                    polygonArea = { getParam = polygonArea }
+                    sides = { getParam = sides }
+                    color = { getParam = color }
                 }
             }
         }

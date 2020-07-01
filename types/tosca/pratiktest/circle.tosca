@@ -46,8 +46,8 @@ serviceTemplates{
             geometricShape {
                 type = pratiktest.resourceTypes.geometricShape
                 properties {
-                    circumference = { getParam = circumference }
-                    circleArea = { getParam = circleArea }
+                    color = { getParam = color }
+                    radius = { getParam = radius }
                 }
             }
         }
